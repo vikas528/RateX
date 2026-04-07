@@ -1,42 +1,48 @@
 # =============================================================================
 #  deploy-backend.yml
 #
-#  Triggers a Render redeploy of the backend service whenever code is merged
-#  to `main`.  Render rebuilds the Docker image and rolls out the new version.
+#  Triggers a Koyeb redeploy of the backend service whenever code is merged
+#  to `main`.  Koyeb rebuilds the Docker image and rolls out the new version.
 #
-#  Required GitHub repository secret  (Settings → Secrets and variables →
+#  Required GitHub repository secrets  (Settings → Secrets and variables →
 #  Actions → Secrets tab):
-#    RENDER_DEPLOY_HOOK_URL   The deploy-hook URL from your Render service.
-#                             Render dashboard → ratex-backend → Settings →
-#                             "Deploy Hook" → copy the full URL.
+#    KOYEB_API_KEY      Your Koyeb API token.
+#                       Koyeb dashboard → Account → API → Create API token.
+#    KOYEB_SERVICE_ID   The UUID of the ratex-backend service.
+#                       Visible in the URL when you open the service in Koyeb:
+#                       https://app.koyeb.com/services/<SERVICE_ID>
 #
-#  NOTE: Only changes under backend/ and render.yaml trigger this job.
+#  NOTE: Only changes under backend/ trigger this job.
 #        Pure frontend changes skip the backend deploy automatically.
 # =============================================================================
 
-name: Deploy Backend → Render
+name: Deploy Backend → Koyeb
 
 on:
   push:
     branches: [main]
     paths:
       - backend/**
-      - render.yaml
+      - koyeb-setup.yaml
   workflow_dispatch:    # allow manual trigger
 
 jobs:
   deploy:
-    name: Trigger Render deploy
+    name: Trigger Koyeb redeploy
     runs-on: ubuntu-latest
 
     steps:
-      - name: Trigger Render deploy hook
+      - name: Redeploy service on Koyeb
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}")
-          echo "Render response: $STATUS"
+          STATUS=$(curl -s -o response.json -w "%{http_code}" \
+            -X POST "https://app.koyeb.com/v1/services/${{ secrets.KOYEB_SERVICE_ID }}/redeploy" \
+            -H "Authorization: Bearer ${{ secrets.KOYEB_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+          echo "Koyeb response (HTTP $STATUS):"
+          cat response.json
           if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then
-            echo "::error::Render deploy hook failed with HTTP $STATUS"
+            echo "::error::Koyeb redeploy failed with HTTP $STATUS"
             exit 1
           fi
-          echo "::notice::Render deploy triggered successfully (HTTP $STATUS)"
+          echo "::notice::Koyeb redeploy triggered successfully (HTTP $STATUS)"
