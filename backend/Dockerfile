@@ -1,11 +1,12 @@
 FROM golang:1.21-alpine AS builder
 WORKDIR /app
 
-# Copy all source files first so go mod tidy can resolve indirect deps
-COPY . .
+# Copy dependency files first — cached layer; only re-downloads when go.mod/go.sum change
+COPY go.mod go.sum ./
+RUN go mod download
 
-# Download deps; generates go.sum if absent, then verify everything is consistent
-RUN go mod download && go mod tidy
+# Copy the rest of the source and build
+COPY . .
 
 # Build a fully static binary — required so it runs on musl-based Alpine
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o server .
