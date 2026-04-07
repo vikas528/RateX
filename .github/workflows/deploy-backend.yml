@@ -1,0 +1,42 @@
+# =============================================================================
+#  deploy-backend.yml
+#
+#  Triggers a Render redeploy of the backend service whenever code is merged
+#  to `main`.  Render rebuilds the Docker image and rolls out the new version.
+#
+#  Required GitHub repository secret  (Settings → Secrets and variables →
+#  Actions → Secrets tab):
+#    RENDER_DEPLOY_HOOK_URL   The deploy-hook URL from your Render service.
+#                             Render dashboard → ratex-backend → Settings →
+#                             "Deploy Hook" → copy the full URL.
+#
+#  NOTE: Only changes under backend/ and render.yaml trigger this job.
+#        Pure frontend changes skip the backend deploy automatically.
+# =============================================================================
+
+name: Deploy Backend → Render
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - backend/**
+      - render.yaml
+  workflow_dispatch:    # allow manual trigger
+
+jobs:
+  deploy:
+    name: Trigger Render deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Render deploy hook
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}")
+          echo "Render response: $STATUS"
+          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then
+            echo "::error::Render deploy hook failed with HTTP $STATUS"
+            exit 1
+          fi
+          echo "::notice::Render deploy triggered successfully (HTTP $STATUS)"

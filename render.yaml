@@ -1,0 +1,48 @@
+# =============================================================================
+#  render.yaml — Render Blueprint
+#
+#  Defines the full RateX stack on Render:
+#    • ratex-backend  — Go HTTP server (Docker)
+#    • ratex-redis    — Managed Redis instance
+#
+#  Usage:
+#    1. Push this file to the root of your GitHub repo.
+#    2. Go to https://dashboard.render.com/blueprints → "New Blueprint Instance"
+#    3. Connect your vikas528/RateX repo — Render reads this file automatically.
+#    4. After first deploy, note the "ratex-backend" service URL
+#       (e.g. https://ratex-backend.onrender.com) and add it as a GitHub
+#       repository variable:  VITE_API_BASE_URL = https://ratex-backend.onrender.com
+# =============================================================================
+
+services:
+
+  # ── Go backend ─────────────────────────────────────────────────────────────
+  - type: web
+    name: ratex-backend
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /ratex/health
+    autoDeploy: false   # Triggered by GitHub Actions workflow (deploy-backend.yml)
+    envVars:
+      # Render injects a full redis:// URL from the managed Redis service below.
+      # The backend reads REDIS_URL first; falls back to REDIS_ADDR for local dev.
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: ratex-redis
+          property: connectionString
+      - key: RATE_LIMITER_ALGO
+        value: sliding_window     # fixed_window | sliding_window | token_bucket
+      - key: RATE_LIMITER_LIMIT
+        value: 100
+      - key: RATE_LIMITER_WINDOW_SECS
+        value: 60
+      - key: RATE_LIMITER_REFILL_RATE
+        value: 1.0
+
+  # ── Managed Redis ───────────────────────────────────────────────────────────
+  - type: redis
+    name: ratex-redis
+    plan: free
+    maxmemoryPolicy: noeviction
