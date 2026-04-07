@@ -1,0 +1,177 @@
+/* =============================================================================
+   THEME TOKENS  —  RateX
+   Design token file. All color values live here.
+   Usage:  var(--token-name)
+   Themes: [data-theme="dark"]  (default)
+           [data-theme="light"] (opt-in)
+   In React, toggle: document.documentElement.dataset.theme = 'light' | 'dark'
+   ============================================================================= */
+
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/*  DARK THEME  (default — applied to :root)                                   */
+/* ─────────────────────────────────────────────────────────────────────────── */
+:root,
+[data-theme="dark"] {
+
+  /* ── Surface layers (darkest → lightest) ─────────────────────────────── */
+  --bg-page:          #0f1117;   /* main body background                    */
+  --bg-card:          #1a1d27;   /* cards, header panels                    */
+  --bg-input:         #111420;   /* inputs, algo buttons, stat cards        */
+  --bg-bucket:        #0d1018;   /* token-bucket inner background           */
+  --bg-subtle:        #1e2538;   /* badge-avg, btn-clear, table row accents */
+  --bg-faint:         #151820;   /* truncation note background              */
+
+  /* ── Borders ─────────────────────────────────────────────────────────── */
+  --border-default:   #2d3148;   /* standard borders                        */
+  --border-strong:    #3d4468;   /* btn-stop, btn-clear hover               */
+  --border-faint:     #252840;   /* truncation note border                  */
+  --border-focus:     #5a62a4;   /* focus / hover border accent             */
+
+  /* ── Text hierarchy ──────────────────────────────────────────────────── */
+  --text-primary:     #e2e8f0;   /* main body copy                          */
+  --text-heading:     #c4c9e6;   /* card titles, hover text                 */
+  --text-secondary:   #9ba3c4;   /* muted / supporting copy                 */
+  --text-label:       #7a82a8;   /* field labels, info titles               */
+  --text-dim:         #5a6282;   /* table headers, progress labels          */
+  --text-faint:       #3d4468;   /* tick marks, legend text                 */
+  --text-on-brand:    #ffffff;   /* text on colored / dark backgrounds      */
+
+  /* ── Brand / Primary ─────────────────────────────────────────────────── */
+  --brand:            #7c6bf8;   /* primary accent (purple)                 */
+  --brand-hover:      #6a59e6;   /* on hover                                */
+  --brand-light:      #a78bfa;   /* lighter variant for gradients           */
+  --brand-active-bg:  #2d2760;   /* selected/active button background       */
+  --brand-active-text:#c4b5fd;   /* selected/active button text             */
+
+  /* ── Status: success / pass ──────────────────────────────────────────── */
+  --status-pass-bg:         #1a3a2a;
+  --status-pass-text:       #4ade80;
+  --status-pass-border:     #14532d;
+  --status-pass-bg-glow:    #14532d33;  /* semi-transparent badge bg       */
+
+  /* ── Status: rate-limited / blocked ─────────────────────────────────── */
+  --status-block-bg:        #3a2020;
+  --status-block-text:      #f87171;
+
+  /* ── Status: warning (amber) ─────────────────────────────────────────── */
+  --status-warn-bg:         #2a2010;
+  --status-warn-border:     #5a4010;
+  --status-warn-text:       #fb923c;
+
+  /* ── Status: error (red) ─────────────────────────────────────────────── */
+  --status-err-bg:          #3a1a1a;
+  --status-err-text:        #f87171;
+
+  /* ── Status: orange-error (distinct from block) ─────────────────────── */
+  --status-orange-bg:       #3a2a10;
+  --status-orange-text:     #fb923c;
+
+  /* ── Status: neutral / avg ───────────────────────────────────────────── */
+  --status-avg-bg:          #1e2538;
+  --status-avg-text:        #94a3b8;
+
+  /* ── Fire-button gradient ─────────────────────────────────────────────── */
+  --fire-from:        #f97316;
+  --fire-to:          #ef4444;
+
+  /* ── Progress & bar tracks ───────────────────────────────────────────── */
+  --progress-track:   #2d3148;
+  --progress-pass1:   #4ade80;
+  --progress-pass2:   #22c55e;
+  --progress-burst1:  #7c6bf8;
+  --progress-burst2:  #a78bfa;
+
+  /* ── Table ───────────────────────────────────────────────────────────── */
+  --table-row-border:       #1e2538;
+  --table-row-block-tint:   rgba(239,68,68,.04);
+  --table-row-err-tint:     rgba(251,146,60,.04);
+
+  /* ── Spinner ─────────────────────────────────────────────────────────── */
+  --spinner-track:    rgba(255,255,255,.3);
+  --spinner-tip:      #ffffff;
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/*  LIGHT THEME  (opt-in via  data-theme="light"  on <html>)                  */
+/* ─────────────────────────────────────────────────────────────────────────── */
+[data-theme="light"] {
+
+  /* ── Surface layers ──────────────────────────────────────────────────── */
+  --bg-page:          #f4f6fb;
+  --bg-card:          #ffffff;
+  --bg-input:         #eef0f7;
+  --bg-bucket:        #e2e6f5;
+  --bg-subtle:        #dde1f0;
+  --bg-faint:         #f0f2fa;
+
+  /* ── Borders ─────────────────────────────────────────────────────────── */
+  --border-default:   #d0d4e8;
+  --border-strong:    #b0b8d8;
+  --border-faint:     #e0e4f0;
+  --border-focus:     #8b7af0;
+
+  /* ── Text hierarchy ──────────────────────────────────────────────────── */
+  --text-primary:     #1a1d2e;
+  --text-heading:     #2a2e48;
+  --text-secondary:   #4a5280;
+  --text-label:       #6070a0;
+  --text-dim:         #7a84a8;
+  --text-faint:       #a0a8c8;
+  --text-on-brand:    #ffffff;
+
+  /* ── Brand / Primary ─────────────────────────────────────────────────── */
+  --brand:            #6b5ce7;
+  --brand-hover:      #5a4cd6;
+  --brand-light:      #8b7af0;
+  --brand-active-bg:  #ebe8ff;
+  --brand-active-text:#4a3ab8;
+
+  /* ── Status: success / pass ──────────────────────────────────────────── */
+  --status-pass-bg:         #dcfce7;
+  --status-pass-text:       #16a34a;
+  --status-pass-border:     #86efac;
+  --status-pass-bg-glow:    rgba(134,239,172,.25);
+
+  /* ── Status: rate-limited / blocked ─────────────────────────────────── */
+  --status-block-bg:        #fee2e2;
+  --status-block-text:      #dc2626;
+
+  /* ── Status: warning (amber) ─────────────────────────────────────────── */
+  --status-warn-bg:         #fff7ed;
+  --status-warn-border:     #fed7aa;
+  --status-warn-text:       #ea580c;
+
+  /* ── Status: error (red) ─────────────────────────────────────────────── */
+  --status-err-bg:          #fee2e2;
+  --status-err-text:        #dc2626;
+
+  /* ── Status: orange-error ─────────────────────────────────────────────── */
+  --status-orange-bg:       #fff7ed;
+  --status-orange-text:     #c2410c;
+
+  /* ── Status: neutral / avg ───────────────────────────────────────────── */
+  --status-avg-bg:          #f1f5f9;
+  --status-avg-text:        #64748b;
+
+  /* ── Fire-button gradient (same in both themes) ───────────────────────── */
+  --fire-from:        #f97316;
+  --fire-to:          #ef4444;
+
+  /* ── Progress & bar tracks ───────────────────────────────────────────── */
+  --progress-track:   #e2e5f0;
+  --progress-pass1:   #22c55e;
+  --progress-pass2:   #16a34a;
+  --progress-burst1:  #6b5ce7;
+  --progress-burst2:  #8b7af0;
+
+  /* ── Table ───────────────────────────────────────────────────────────── */
+  --table-row-border:       #e8eaf2;
+  --table-row-block-tint:   rgba(220,38,38,.05);
+  --table-row-err-tint:     rgba(234,88,12,.05);
+
+  /* ── Spinner ─────────────────────────────────────────────────────────── */
+  --spinner-track:    rgba(0,0,0,.15);
+  --spinner-tip:      #6b5ce7;
+}
