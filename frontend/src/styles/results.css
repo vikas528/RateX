@@ -213,3 +213,23 @@
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+
+/* ── Mobile responsiveness ────────────────────────────────────────────────── */
+@media (max-width: 520px) {
+  /* Let the badge row wrap under the title/clear button on narrow screens */
+  .results-header {
+    flex-wrap: wrap;
+  }
+
+  /* Tighten table cell padding so the table needs less width before scrolling */
+  .results-table th,
+  .results-table td {
+    padding: .4rem .5rem;
+  }
+
+  /* Let the progress bar shrink further on very small containers */
+  .prog-bar-wrap {
+    min-width: 36px;
+  }
+}

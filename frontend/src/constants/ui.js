@@ -25,6 +25,9 @@ export const CONCURRENT_MAX_DEFAULT = 50
 /** Hard cap on the total sequential request count (all endpoints). */
 export const SEQUENTIAL_MAX_DEFAULT = 2000
 
+/** Maximum allowed inter-request delay (ms). Prevents accidental very-long tests. */
+export const SEQUENTIAL_MAX_DELAY_MS = 20000
+
 // ── Sequential minimum-delay tiers ───────────────────────────────────────────
 /**
  * Each tier defines an inclusive upper bound for the request count and the

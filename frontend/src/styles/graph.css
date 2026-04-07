@@ -1,0 +1,152 @@
+/* =============================================================================
+   GRAPH  —  RequestGraph live multi-line chart
+   ============================================================================= */
+
+.rg-card {
+  margin-bottom: 1.25rem;
+}
+
+/* ── Header row ──────────────────────────────────────────────────────────── */
+.rg-header {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+/* ── Legend ──────────────────────────────────────────────────────────────── */
+.rg-legend {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  font-size: .75rem;
+  color: var(--text-secondary);
+  margin-left: .25rem;
+  flex-wrap: wrap;
+}
+
+.rg-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+}
+
+/* Short horizontal line swatch that mirrors the polyline in the chart */
+.rg-legend-line {
+  display: inline-block;
+  width: 18px;
+  height: 2.5px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ── Status pill (LIVE / DONE / WAITING) ─────────────────────────────────── */
+.rg-status {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  margin-left: auto;
+  padding: .2rem .65rem;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  border-radius: 20px;
+}
+
+.rg-status--live {
+  background: var(--status-pass-bg-glow);
+  border: 1px solid var(--status-pass-border);
+  color: var(--status-pass-text);
+}
+
+.rg-status--done {
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  color: var(--text-dim);
+}
+
+.rg-status--waiting {
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  color: var(--text-dim);
+  letter-spacing: .08em;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+.rg-empty {
+  padding: 2rem;
+  text-align: center;
+  font-size: .88rem;
+  color: var(--text-dim);
+  background: var(--bg-input);
+  border: 1px dashed var(--border-default);
+  border-radius: 8px;
+}
+
+/* ── SVG chart container ─────────────────────────────────────────────────── */
+.rg-chart-wrap {
+  position: relative;
+  width: 100%;
+  overflow: visible;
+}
+
+.rg-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+/* ── Tooltip ─────────────────────────────────────────────────────────────── */
+.rg-tooltip {
+  pointer-events: none;
+  z-index: 1000;
+  min-width: 120px;
+  padding: .5rem .75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.35);
+  font-size: .78rem;
+}
+
+.rg-tt-title {
+  font-weight: 700;
+  font-size: .72rem;
+  letter-spacing: .06em;
+  color: var(--text-label);
+  text-transform: uppercase;
+  margin-bottom: .35rem;
+}
+
+.rg-tt-row {
+  display: flex;
+  justify-content: space-between;
+  gap: .75rem;
+  line-height: 1.6;
+}
+
+.rg-tt--pass  { color: var(--status-pass-text); }
+.rg-tt--block { color: var(--status-block-text); }
+.rg-tt--error { color: var(--status-warn-text); }
+
+
+/* ── Mobile responsiveness ────────────────────────────────────────────────── */
+@media (max-width: 520px) {
+  /* Legend wraps cleanly under the title on small screens.
+     Nudge the status pill back to the left since it uses margin-left:auto
+     but the header already wraps (flex-wrap: wrap is already set). */
+  .rg-header {
+    gap: .5rem;
+  }
+
+  .rg-status {
+    margin-left: 0;
+  }
+
+  /* The SVG scales via viewBox already — just ensure no overflow clipping */
+  .rg-chart-wrap {
+    overflow: hidden;
+  }
+}

@@ -139,3 +139,31 @@ body {
   padding-bottom: .6rem;
   border-bottom: 1px solid var(--border-default);
 }
+
+
+/* ── Mobile responsiveness ────────────────────────────────────────────────── */
+@media (max-width: 520px) {
+  .app {
+    padding: .875rem .75rem;
+  }
+
+  /* Tighten up the header so it stacks cleanly on narrow screens */
+  .header {
+    padding: .75rem 1rem;
+    gap: .5rem;
+  }
+
+  /* Let the active-config line wrap to its own row instead of pushing the
+     theme-toggle button off screen */
+  .header-active {
+    margin-left: 0;
+    width: 100%;
+    font-size: .75rem;
+    order: 10;          /* always last in the flex row */
+  }
+
+  /* Give cards a bit more room on small screens */
+  .card {
+    padding: 1.1rem 1rem;
+  }
+}

@@ -8,4 +8,5 @@
 @import './styles/layout.css';
 @import './styles/forms.css';
 @import './styles/results.css';
+@import './styles/graph.css';
 @import './styles/visualizer.css';

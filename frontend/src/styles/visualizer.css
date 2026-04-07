@@ -378,3 +378,43 @@
   font-size: .73rem;
   color: var(--text-faint);
 }
+
+
+/* ── Mobile responsiveness ────────────────────────────────────────────────── */
+@media (max-width: 520px) {
+  /* Token Bucket: bucket(90px) + gap(32px) + stats grid(min-width 200px) = 322px.
+     On phones (~288px card inner), the right panel would overflow.
+     Remove the min-width so it takes whatever space is left after the bucket. */
+  .viz-tb-wrap .viz-stats-grid {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .viz-tb-wrap {
+    gap: 1.25rem;
+    justify-content: center;
+  }
+
+  /* Fixed Window: SVG ring(150px) + gap(32px) + right panel(min 220px) = 402px.
+     Reduce min-width to 0 so it reflows below the ring. */
+  .viz-fw-right {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .viz-fw-wrap {
+    gap: 1.25rem;
+    justify-content: center;
+  }
+
+  /* Slightly shrink the fixed-window SVG so it doesn't eat half the card */
+  .viz-fw-svg {
+    width: 120px;
+    height: 120px;
+  }
+
+  /* Header spacing */
+  .viz-header {
+    margin-bottom: 1rem;
+  }
+}

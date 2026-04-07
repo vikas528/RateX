@@ -9,6 +9,7 @@ import { BURST_ENDPOINTS } from '../../constants/api'
 import {
   BURST_PRESETS_SEQUENTIAL,
   BURST_PRESETS_CONCURRENT,
+  SEQUENTIAL_MAX_DELAY_MS,
 } from '../../constants/ui'
 
 export default function BurstPanel({
@@ -16,14 +17,21 @@ export default function BurstPanel({
   numReqs,
   numReqsRaw,
   mode,
+  delayMode,
   delayMs,
+  delayMin,
+  delayMax,
   isBursting,
   progress,
   minDelayRequired,
   effectiveDelay,
+  effectiveDelayMin,
   // burst hook actions
   setMode,
+  setDelayMode,
   setDelayMs,
+  setDelayMin,
+  setDelayMax,
   setNumReqs,
   handleNumReqsChange,
   onRunBurst,
@@ -35,7 +43,8 @@ export default function BurstPanel({
   const maxForMode   = mode === 'concurrent' ? endpoint.maxConcurrent : endpoint.maxSequential
   const presets      = mode === 'concurrent' ? BURST_PRESETS_CONCURRENT : BURST_PRESETS_SEQUENTIAL
   const overCap      = numReqs > maxForMode
-  const delayAutoUp  = mode === 'sequential' && minDelayRequired > 0 && delayMs < minDelayRequired
+  const delayAutoUp  = mode === 'sequential' && delayMode === 'fixed' && minDelayRequired > 0 && delayMs < minDelayRequired
+  const rangeInvalid = mode === 'sequential' && delayMode === 'random' && delayMin > delayMax
 
   // Auto-clamp when switching mode (concurrent/sequential have different caps)
   const handleModeChange = (m) => {
@@ -116,28 +125,105 @@ export default function BurstPanel({
 
       {/* ── Sequential delay ── */}
       {mode === 'sequential' && (
-        <div className="field" style={{ marginTop: '.75rem' }}>
-          <label className="field-label">
-            Delay between requests (ms)
-            {minDelayRequired > 0 && (
-              <span className="field-cap-hint">(min {minDelayRequired} ms for {numReqs} requests)</span>
-            )}
+        <div style={{ marginTop: '.75rem' }}>
+
+          {/* Fixed / Random toggle */}
+          <label className="field-label" style={{ marginBottom: '.5rem' }}>
+            Delay between requests
+            <span className="field-cap-hint">(0 – 20,000 ms)</span>
           </label>
-          <input
-            type="number"
-            className={`input ${delayAutoUp ? 'input--warn' : ''}`}
-            min="0"
-            max="60000"
-            step="10"
-            value={delayMs}
-            onChange={e => setDelayMs(Number(e.target.value))}
-            placeholder="0 = no delay"
-          />
-          {delayAutoUp && (
-            <div className="warn-box">
-              ⚠ A minimum delay of <strong>{minDelayRequired} ms</strong> is enforced for{' '}
-              {numReqs} sequential requests to protect the server.
-              Effective delay: <strong>{effectiveDelay} ms</strong>.
+          <div className="mode-group" style={{ marginBottom: '.6rem' }}>
+            <label className={`mode-btn ${delayMode === 'fixed'  ? 'mode-btn--active' : ''}`}>
+              <input type="radio" name="delayMode" value="fixed"
+                checked={delayMode === 'fixed'} onChange={() => setDelayMode('fixed')} />
+              Fixed
+            </label>
+            <label className={`mode-btn ${delayMode === 'random' ? 'mode-btn--active' : ''}`}>
+              <input type="radio" name="delayMode" value="random"
+                checked={delayMode === 'random'} onChange={() => setDelayMode('random')} />
+              Random Range
+            </label>
+          </div>
+
+          {/* Fixed delay */}
+          {delayMode === 'fixed' && (
+            <div className="field">
+              <label className="field-label">
+                Delay (ms)
+                {minDelayRequired > 0 &&
+                  <span className="field-cap-hint">(min {minDelayRequired} ms enforced)</span>}
+              </label>
+              <input
+                type="number"
+                className={`input ${delayAutoUp ? 'input--warn' : ''}`}
+                min="0"
+                max={SEQUENTIAL_MAX_DELAY_MS}
+                step="10"
+                value={delayMs}
+                onChange={e => setDelayMs(Math.min(Number(e.target.value), SEQUENTIAL_MAX_DELAY_MS))}
+                placeholder="0 = no delay"
+              />
+              {delayAutoUp && (
+                <div className="warn-box">
+                  ⚠ Minimum delay of <strong>{minDelayRequired} ms</strong> enforced for{' '}
+                  {numReqs} requests. Effective: <strong>{effectiveDelay} ms</strong>.
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Random range delay */}
+          {delayMode === 'random' && (
+            <div>
+              <div className="field-row">
+                <div className="field">
+                  <label className="field-label">
+                    Min (ms)
+                    {minDelayRequired > 0 &&
+                      <span className="field-cap-hint">(≥ {minDelayRequired})</span>}
+                  </label>
+                  <input
+                    type="number"
+                    className={`input ${rangeInvalid ? 'input--warn' : ''}`}
+                    min="0"
+                    max={SEQUENTIAL_MAX_DELAY_MS}
+                    step="10"
+                    value={delayMin}
+                    onChange={e => setDelayMin(Math.min(Number(e.target.value), SEQUENTIAL_MAX_DELAY_MS))}
+                    placeholder="0"
+                  />
+                </div>
+                <div className="field">
+                  <label className="field-label">Max (ms)</label>
+                  <input
+                    type="number"
+                    className={`input ${rangeInvalid ? 'input--warn' : ''}`}
+                    min="0"
+                    max={SEQUENTIAL_MAX_DELAY_MS}
+                    step="10"
+                    value={delayMax}
+                    onChange={e => setDelayMax(Math.min(Number(e.target.value), SEQUENTIAL_MAX_DELAY_MS))}
+                    placeholder="1000"
+                  />
+                </div>
+              </div>
+              {rangeInvalid && (
+                <div className="warn-box">
+                  ⚠ Min delay cannot exceed max delay.
+                </div>
+              )}
+              {!rangeInvalid && minDelayRequired > 0 && delayMin < minDelayRequired && (
+                <div className="warn-box">
+                  ⚠ Minimum delay of <strong>{minDelayRequired} ms</strong> enforced — random values
+                  will be drawn from <strong>{effectiveDelayMin}–{Math.max(delayMax, effectiveDelayMin)} ms</strong>.
+                </div>
+              )}
+              {!rangeInvalid && (
+                <p style={{ fontSize: '.75rem', color: 'var(--text-dim)', marginTop: '.4rem' }}>
+                  Each request waits a random delay between {Math.max(delayMin, minDelayRequired)} ms and{' '}
+                  {Math.max(delayMax, Math.max(delayMin, minDelayRequired))} ms.
+                </p>
+              )}
             </div>
           )}
         </div>

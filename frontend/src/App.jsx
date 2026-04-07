@@ -19,6 +19,7 @@ import Header        from './components/Header/Header'
 import ConfigPanel   from './components/ConfigPanel/ConfigPanel'
 import BurstPanel    from './components/BurstPanel/BurstPanel'
 import VisualizerCard from './components/visualizer/VisualizerCard'
+import RequestGraph   from './components/RequestGraph/RequestGraph'
 import ResultsPanel  from './components/ResultsPanel/ResultsPanel'
 
 export default function App() {
@@ -82,13 +83,20 @@ export default function App() {
           numReqs={burstHook.numReqs}
           numReqsRaw={burstHook.numReqsRaw}
           mode={burstHook.mode}
+          delayMode={burstHook.delayMode}
           delayMs={burstHook.delayMs}
+          delayMin={burstHook.delayMin}
+          delayMax={burstHook.delayMax}
           isBursting={burstHook.isBursting}
           progress={burstHook.progress}
           minDelayRequired={burstHook.minDelayRequired}
           effectiveDelay={burstHook.effectiveDelay}
+          effectiveDelayMin={burstHook.effectiveDelayMin}
           setMode={burstHook.setMode}
+          setDelayMode={burstHook.setDelayMode}
           setDelayMs={burstHook.setDelayMs}
+          setDelayMin={burstHook.setDelayMin}
+          setDelayMax={burstHook.setDelayMax}
           setNumReqs={burstHook.setNumReqs}
           handleNumReqsChange={burstHook.handleNumReqsChange}
           endpoint={endpoint}
@@ -100,6 +108,9 @@ export default function App() {
 
       {/* ── Live visualizer ── */}
       <VisualizerCard activeConfig={configHook.activeConfig} isBursting={burstHook.isBursting} />
+
+      {/* ── Request timeline graph ── */}
+      <RequestGraph results={burstHook.results} isBursting={burstHook.isBursting} />
 
       {/* ── Burst results ── */}
       <ResultsPanel

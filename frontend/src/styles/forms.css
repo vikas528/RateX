@@ -386,3 +386,27 @@ select.input {
   line-height: 1.5;
   color: var(--text-secondary);
 }
+
+
+/* ── Mobile responsiveness ────────────────────────────────────────────────── */
+@media (max-width: 520px) {
+  /* Stack the two-column field grid into a single column */
+  .field-row {
+    grid-template-columns: 1fr;
+  }
+
+  /* Algo buttons: let each button be at least 72px wide and fill available space */
+  .algo-grid {
+    grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  }
+
+  /* Allow the fire/stop button row to wrap if needed */
+  .fire-row {
+    flex-wrap: wrap;
+  }
+
+  /* The request-count input should fill its container on mobile */
+  .req-count-input {
+    max-width: 100%;
+  }
+}
