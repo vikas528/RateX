@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"encoding/json"
+	"net/http"
 	"os"
 	"strconv"
 )
@@ -20,4 +22,10 @@ func EnvIntOr(key string, defaultValue int) int {
 		}
 	}
 	return defaultValue
+}
+
+func JsonResponse(resw http.ResponseWriter, status int, data any) {
+	resw.Header().Set("Content-Type", "application/json")
+	resw.WriteHeader(status)
+	json.NewEncoder(resw).Encode(data)
 }
