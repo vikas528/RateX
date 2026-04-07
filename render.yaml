@@ -46,3 +46,4 @@ services:
     name: ratex-redis
     plan: free
     maxmemoryPolicy: noeviction
+    ipAllowList: []   # empty = allow only Render-internal services (recommended)
