@@ -24,6 +24,15 @@ func EnvIntOr(key string, defaultValue int) int {
 	return defaultValue
 }
 
+func EnvFloatOr(key string, defaultValue float64) float64 {
+	if v:= os.Getenv(key); v != "" {
+		if f, err := strconv.ParseFloat(v, 64); err == nil && f > 0 {
+			return f
+		}
+	}
+	return defaultValue
+}
+
 func JsonResponse(resw http.ResponseWriter, status int, data any) {
 	resw.Header().Set("Content-Type", "application/json")
 	resw.WriteHeader(status)

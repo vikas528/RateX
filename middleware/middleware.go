@@ -23,13 +23,14 @@ func RateLimit(getConfig func() (limiter.Limiter, time.Duration)) func(http.Hand
 				ip = forwareded
 			}
 
-			allowed, err := limiter.Allow(req.Context(), ip)
+			allowed, remaining, err := limiter.Allow(req.Context(), ip)
 
 			if err != nil {
 				http.Error(resw, "rate limiter error", http.StatusInternalServerError)
 				return
 			}
 
+			resw.Header().Set("X-RateLimit-Remaining", strconv.Itoa(remaining))
 			resw.Header().Set("X-RateLimit-Reset", fmt.Sprintf("%d", time.Now().Add(window).Unix()))
 
 			if !allowed {

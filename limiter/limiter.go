@@ -1,7 +1,9 @@
 package limiter
 
-import "context"
+import (
+	"context"
+)
 
 type Limiter interface {
-	Allow(ctx context.Context, key string) (allowed bool, err error)
+	Allow(ctx context.Context, key string) (allowed bool, remaining int, err error)
 }

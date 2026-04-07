@@ -18,19 +18,24 @@ func NewFixedWindow(client *redis.Client, limit int, window time.Duration) *Fixe
 	return &FixedWindow{client: client, limit: limit, window: window}
 }
 
-func (fw *FixedWindow) Allow(ctx context.Context, key string) (bool, error) {
+func (fw *FixedWindow) Allow(ctx context.Context, key string) (bool, int, error) {
 	bucket := time.Now().Truncate(fw.window).Unix()
 	redisKey := fmt.Sprintf("fw:%s:%d", key, bucket)
 
 	count, err := fw.client.Incr(ctx, redisKey).Result()
 
 	if err != nil {
-		return false, err
+		return false, 0, err
 	}
 
 	if count == 1 {
 		fw.client.Expire(ctx, redisKey, fw.window)
 	}
 
-	return count <= int64(fw.limit), nil
+	remaining := fw.limit - int(count)
+	if remaining < 0 {
+		remaining = 0
+	}
+
+	return count <= int64(fw.limit), remaining, nil
 }

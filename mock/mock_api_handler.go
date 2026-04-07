@@ -3,11 +3,13 @@ package mock
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/vikas528/RateX/common"
 	"github.com/vikas528/RateX/config"
 	"github.com/vikas528/RateX/utils"
 )
@@ -107,4 +109,45 @@ func HandleRoot(resw http.ResponseWriter, req *http.Request, server *config.Serv
 			"GET  /api/users/me",
 		},
 	})
+}
+
+func HandleGetConfig(resw http.ResponseWriter, req *http.Request, server *config.Server) {
+	config := server.GetConfig()
+	utils.JsonResponse(resw, http.StatusOK, config)
+}
+
+func HandleUpdateConfig(resw http.ResponseWriter, req *http.Request, server *config.Server) {
+	var reqBody *config.AppConfig
+	if err := json.NewDecoder(req.Body).Decode(&reqBody); err != nil {
+		utils.JsonResponse(resw, http.StatusBadRequest, map[string]string{"error": "invalid JSON"})
+		return
+	}
+
+	valid := map[string]bool{"fixed_window": true, "sliding_window": true, "token_bucket": true}
+
+	if !valid[reqBody.Algo] {
+		utils.JsonResponse(resw, http.StatusBadRequest, map[string]string{
+			"error": "algo must be fixed_window, sliding_window, or token_bucket",
+		})
+		return
+	}
+
+	if reqBody.Limit <= 0 {
+		// default to 10 if invalid limit provided
+		reqBody.Limit = 10
+	}
+
+	if reqBody.WindowSecs <= 0 {
+		// default to 60 seconds if invalid window provided
+		reqBody.WindowSecs = 60
+	}
+
+	// Flush old Redis keys so the new config starts with a clean slate
+	server.FlushAllKeys()
+
+	newLimiter := common.BuildLimiter(server.GetRedisClient(), reqBody)
+
+	server.SetLimitAndConfig(newLimiter, reqBody)
+	log.Printf("Config updated: algo=%s limit=%d window=%ds refill_rate=%.2f", reqBody.Algo, reqBody.Limit, reqBody.WindowSecs, reqBody.RefillRate,)
+	utils.JsonResponse(resw, http.StatusOK, reqBody)
 }
