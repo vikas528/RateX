@@ -13,7 +13,7 @@
 | Environment | URL |
 |-------------|-----|
 | 🌐 Frontend (GitHub Pages) | https://vikas528.github.io/RateX/ |
-| 🔌 Backend API (Koyeb) | _add your Koyeb service URL here_ |
+| 🔌 Backend API (Render) | _add your Render service URL here_ |
 | 🐳 Local Docker | `http://localhost:5173` (dev) · `http://localhost:3000` (prod) |
 
 ---
@@ -439,11 +439,10 @@ This repo ships two GitHub Actions workflows that deploy automatically on every 
 flowchart LR
     Dev["👨‍💻 Push to main"] --> GHA["GitHub Actions"]
     GHA --> FE["deploy-frontend.yml\nBuild Vite → GitHub Pages"]
-    GHA --> BE["deploy-backend.yml\nTrigger Koyeb redeploy API"]
+    GHA --> BE["deploy-backend.yml\nTrigger Render deploy hook"]
     FE --> GHP["🌐 GitHub Pages\nvikas528.github.io/RateX/"]
-    BE --> KYB["☁️ Koyeb\nGo backend (Docker)"]
-    KYB -. "REDIS_URL" .-> UPS["🗄 Upstash\nManaged Redis (free)"]
-    GHP -. "VITE_API_BASE_URL" .-> KYB
+    BE --> RND["☁️ Render\nGo backend + Redis"]
+    GHP -. "VITE_API_BASE_URL" .-> RND
 ```
 
 ### Step-by-step setup guide
@@ -458,26 +457,13 @@ Go to **Settings → Pages** and set **Source = "GitHub Actions"**.
 2. Choose a region close to your Render service (e.g. `us-east-1`).
 3. Copy the **Redis URL** — it looks like `rediss://default:<password>@<host>.upstash.io:<port>`.
 
-#### 3 · Deploy the backend to Koyeb (no credit card required)
+#### 3 · Deploy the backend to Render
 
-1. Sign up at [app.koyeb.com](https://app.koyeb.com) — no card needed.
-2. Click **Create Service → Docker → GitHub**.
-3. Connect repo `vikas528/RateX` and set:
-   - **Dockerfile path:** `backend/Dockerfile`
-   - **Build context:** `backend`
-   - **Port:** `8080`
-   - **Health check path:** `/ratex/health`
-4. Add environment variables:
-   | Key | Value |
-   |-----|-------|
-   | `REDIS_URL` | Upstash Redis URL from step above |
-   | `RATE_LIMITER_ALGO` | `sliding_window` |
-   | `RATE_LIMITER_LIMIT` | `100` |
-   | `RATE_LIMITER_WINDOW_SECS` | `60` |
-   | `RATE_LIMITER_REFILL_RATE` | `1.0` |
-5. Deploy — once live, copy the public URL (e.g. `https://ratex-backend-<hash>.koyeb.app`).
-6. In Koyeb → **Account → API** → create an API token — copy it.
-7. In Koyeb → open the service → the **Service ID** is visible in the URL (`/services/<UUID>`) — copy it.
+1. Sign up at [render.com](https://render.com) and click **New → Blueprint Instance**.
+2. Connect your `vikas528/RateX` GitHub repo — Render reads `render.yaml` automatically and creates `ratex-backend`.
+3. When prompted for the `REDIS_URL` secret, paste the Upstash URL from step above.
+4. After the first deploy, copy the service URL (e.g. `https://ratex-backend.onrender.com`).
+5. Go to Render dashboard → **ratex-backend → Settings → Deploy Hook** → copy the full hook URL.
 
 #### 3 · Add GitHub secrets & variables
 
@@ -486,15 +472,14 @@ Go to **Settings → Secrets and variables → Actions** in your GitHub repo.
 **Secrets** (encrypted, never shown again):
 
 | Name | Where to find it | Used by |
-|------|-----------------|----------|
-| `KOYEB_API_KEY` | Koyeb → Account → API → Create token | `deploy-backend.yml` |
-| `KOYEB_SERVICE_ID` | Koyeb → open service → UUID in the URL | `deploy-backend.yml` |
+|------|-----------------|---------|
+| `RENDER_DEPLOY_HOOK_URL` | Render dashboard → ratex-backend → Settings → Deploy Hook | `deploy-backend.yml` |
 
 **Variables** (plain text, visible):
 
 | Name | Value | Used by |
-|------|-------|----------|
-| `VITE_API_BASE_URL` | `https://ratex-backend-<hash>.koyeb.app` | `deploy-frontend.yml` |
+|------|-------|---------|
+| `VITE_API_BASE_URL` | `https://ratex-backend.onrender.com` (your Render URL from step 4) | `deploy-frontend.yml` |
 
 #### 5 · Enable GitHub Pages (one-time)
 
@@ -510,8 +495,8 @@ If the browser blocks cross-origin requests from GitHub Pages to Render, add you
 
 | Workflow | File | Trigger | What it does |
 |----------|------|---------|-------------|
-| Deploy Frontend | `.github/workflows/deploy-frontend.yml` | Push to `main` | `npm ci` → `npm run build` → upload to GitHub Pages |
-| Deploy Backend | `.github/workflows/deploy-backend.yml` | Push to `main` (backend/ changed) | POST to Koyeb redeploy API → Koyeb rebuilds Docker image |
+| Deploy Frontend | `.github/workflows/deploy-frontend.yml` | Push to `main` | `npm ci` → `npm run build` (with `VITE_BASE_PATH=/RateX/`) → upload to GitHub Pages |
+| Deploy Backend | `.github/workflows/deploy-backend.yml` | Push to `main` (backend/ or render.yaml changed) | POST to `RENDER_DEPLOY_HOOK_URL` → Render rebuilds Docker image |
 
 ---
 
