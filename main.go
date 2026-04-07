@@ -10,6 +10,7 @@ import (
 	"github.com/vikas528/RateX/middleware"
 	"github.com/vikas528/RateX/mock"
 	"github.com/vikas528/RateX/utils"
+	"github.com/vikas528/RateX/visualizer"
 )
 
 func main() {
@@ -33,6 +34,15 @@ func main() {
 	// Health check endpoint - not rate limited
 	mux.HandleFunc("/ratex/health", mock.HandleMockHealthCheck)
 
+	mux.HandleFunc("/ratex/visualizer-state", func(resw http.ResponseWriter, req *http.Request) {
+		if req.Method != http.MethodGet {
+			utils.JsonResponse(resw, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+			return
+		}
+
+		visualizer.HandleGetVisualizerState(resw, req, server)
+	})
+
 	mux.HandleFunc("/ratex/config", func(resw http.ResponseWriter, req *http.Request) {
 		switch req.Method {
 		case http.MethodGet:
@@ -45,10 +55,10 @@ func main() {
 	})
 
 	// Rate limited endpoint
-	mux.Handle("/api/products", rateLimiter(http.HandlerFunc(mock.HandleListProducts)))
-	mux.Handle("/api/products/", rateLimiter(http.HandlerFunc(mock.HandleGetProduct)))
-	mux.Handle("/api/orders", rateLimiter(http.HandlerFunc(mock.HandleCreateOrder)))
-	mux.Handle("/api/users/me", rateLimiter(http.HandlerFunc(mock.HandleGetMe)))
+	mux.Handle("/ratex/products", rateLimiter(http.HandlerFunc(mock.HandleListProducts)))
+	mux.Handle("/ratex/products/", rateLimiter(http.HandlerFunc(mock.HandleGetProduct)))
+	mux.Handle("/ratex/orders", rateLimiter(http.HandlerFunc(mock.HandleCreateOrder)))
+	mux.Handle("/ratex/users/me", rateLimiter(http.HandlerFunc(mock.HandleGetMe)))
 
 	mux.HandleFunc("/", func(resw http.ResponseWriter, req *http.Request) {
 		mock.HandleRoot(resw, req, server)
