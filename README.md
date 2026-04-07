@@ -451,14 +451,19 @@ flowchart LR
 
 Go to **Settings → Pages** and set **Source = "GitHub Actions"**.
 
-#### 2 · Deploy the backend to Render
+#### 2 · Get a free Redis URL from Upstash (no credit card required)
+
+1. Go to [console.upstash.com](https://console.upstash.com) → **Create Database**.
+2. Choose a region close to your Render service (e.g. `us-east-1`).
+3. Copy the **Redis URL** — it looks like `rediss://default:<password>@<host>.upstash.io:<port>`.
+
+#### 3 · Deploy the backend to Render
 
 1. Sign up at [render.com](https://render.com) and click **New → Blueprint Instance**.
-2. Connect your `vikas528/RateX` GitHub repo — Render reads `render.yaml` automatically and creates:
-   - `ratex-backend` — Go web service (Docker)
-   - `ratex-redis` — Managed Redis (free tier)
-3. After the first deploy, copy the service URL (e.g. `https://ratex-backend.onrender.com`).
-4. Go to Render dashboard → **ratex-backend → Settings → Deploy Hook** → copy the full hook URL.
+2. Connect your `vikas528/RateX` GitHub repo — Render reads `render.yaml` automatically and creates `ratex-backend`.
+3. When prompted for the `REDIS_URL` secret, paste the Upstash URL from step above.
+4. After the first deploy, copy the service URL (e.g. `https://ratex-backend.onrender.com`).
+5. Go to Render dashboard → **ratex-backend → Settings → Deploy Hook** → copy the full hook URL.
 
 #### 3 · Add GitHub secrets & variables
 
@@ -474,9 +479,15 @@ Go to **Settings → Secrets and variables → Actions** in your GitHub repo.
 
 | Name | Value | Used by |
 |------|-------|---------|
-| `VITE_API_BASE_URL` | `https://ratex-backend.onrender.com` (your Render URL) | `deploy-frontend.yml` |
+| `VITE_API_BASE_URL` | `https://ratex-backend.onrender.com` (your Render URL from step 4) | `deploy-frontend.yml` |
 
-#### 4 · Add CORS origin for GitHub Pages (optional but recommended)
+#### 5 · Enable GitHub Pages (one-time)
+
+Go to repo → **Settings → Pages → Source = "GitHub Actions"**.
+
+#### 6 · Add CORS origin for GitHub Pages (optional but recommended)
+
+If the browser blocks cross-origin requests from GitHub Pages to Render, add your Pages URL to the CORS allow-list in `backend/middleware/cors_middleware.go`.
 
 If the browser blocks cross-origin requests from GitHub Pages to Render, add your Pages URL to the CORS allow-list in `backend/middleware/cors_middleware.go`.
 

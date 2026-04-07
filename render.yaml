@@ -1,16 +1,17 @@
 # =============================================================================
 #  render.yaml — Render Blueprint
 #
-#  Defines the full RateX stack on Render:
-#    • ratex-backend  — Go HTTP server (Docker)
-#    • ratex-redis    — Managed Redis instance
+#  Defines the RateX backend web service on Render.
+#  Redis is provided by Upstash (free tier, no payment required).
 #
-#  Usage:
-#    1. Push this file to the root of your GitHub repo.
-#    2. Go to https://dashboard.render.com/blueprints → "New Blueprint Instance"
-#    3. Connect your vikas528/RateX repo — Render reads this file automatically.
-#    4. After first deploy, note the "ratex-backend" service URL
-#       (e.g. https://ratex-backend.onrender.com) and add it as a GitHub
+#  Full setup:
+#    1. Create a free Redis DB at https://console.upstash.com
+#       → copy the "Redis URL"  (rediss://...@...upstash.io:...)
+#    2. Push this file to the root of your GitHub repo.
+#    3. Go to https://dashboard.render.com → New → Blueprint Instance
+#       → connect vikas528/RateX → Render reads this file.
+#    4. When prompted, paste the Upstash Redis URL into the REDIS_URL field.
+#    5. After the first deploy, copy the service URL and add it as a GitHub
 #       repository variable:  VITE_API_BASE_URL = https://ratex-backend.onrender.com
 # =============================================================================
 
@@ -23,27 +24,17 @@ services:
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     healthCheckPath: /ratex/health
-    autoDeploy: false   # Triggered by GitHub Actions workflow (deploy-backend.yml)
+    autoDeploy: false   # Triggered by GitHub Actions (deploy-backend.yml)
     envVars:
-      # Render injects a full redis:// URL from the managed Redis service below.
-      # The backend reads REDIS_URL first; falls back to REDIS_ADDR for local dev.
+      # Paste your Upstash Redis URL here (rediss://default:<pwd>@<host>:<port>)
+      # Get it free at https://console.upstash.com — no credit card required.
       - key: REDIS_URL
-        fromService:
-          type: redis
-          name: ratex-redis
-          property: connectionString
+        sync: false     # "sync: false" = Render will prompt you to enter this manually
       - key: RATE_LIMITER_ALGO
-        value: sliding_window     # fixed_window | sliding_window | token_bucket
+        value: sliding_window   # fixed_window | sliding_window | token_bucket
       - key: RATE_LIMITER_LIMIT
         value: 100
       - key: RATE_LIMITER_WINDOW_SECS
         value: 60
       - key: RATE_LIMITER_REFILL_RATE
         value: 1.0
-
-  # ── Managed Redis ───────────────────────────────────────────────────────────
-  - type: redis
-    name: ratex-redis
-    plan: free
-    maxmemoryPolicy: noeviction
-    ipAllowList: []   # empty = allow only Render-internal services (recommended)
