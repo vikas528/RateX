@@ -7,26 +7,29 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/vikas528/RateX/constants"
 	"github.com/vikas528/RateX/limiter"
 )
 
+// RateLimit returns a middleware that applies the Limiter returned by getConfig.
+// It adds X-RateLimit-Remaining and X-RateLimit-Reset response headers and
+// replies with 429 when the limit is exceeded.
 func RateLimit(getConfig func() (limiter.Limiter, time.Duration)) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(resw http.ResponseWriter, req *http.Request) {
-			limiter, window := getConfig()
+			l, window := getConfig()
+
 			ip, _, err := net.SplitHostPort(req.RemoteAddr)
 			if err != nil {
 				ip = req.RemoteAddr
 			}
-
-			if forwareded := req.Header.Get("X-Forwarded-For"); forwareded != "" {
-				ip = forwareded
+			if forwarded := req.Header.Get("X-Forwarded-For"); forwarded != "" {
+				ip = forwarded
 			}
 
-			allowed, remaining, err := limiter.Allow(req.Context(), ip)
-
+			allowed, remaining, err := l.Allow(req.Context(), ip)
 			if err != nil {
-				http.Error(resw, "rate limiter error", http.StatusInternalServerError)
+				http.Error(resw, constants.ErrRateLimiter, http.StatusInternalServerError)
 				return
 			}
 
@@ -35,7 +38,7 @@ func RateLimit(getConfig func() (limiter.Limiter, time.Duration)) func(http.Hand
 
 			if !allowed {
 				resw.Header().Set("Retry-After", strconv.Itoa(int(window.Seconds())))
-				http.Error(resw, "rate limit exceeded", http.StatusTooManyRequests)
+				http.Error(resw, constants.ErrRateLimitExceeded, http.StatusTooManyRequests)
 				return
 			}
 
