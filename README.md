@@ -12,8 +12,7 @@
 
 | Environment | URL |
 |-------------|-----|
-| 🌐 Frontend (GitHub Pages) | https://vikas528.github.io/RateX/ |
-| 🔌 Backend API (Fly.io) | _add your Fly.io app URL here_ |
+| 🌐 Live | https://vikas528.github.io/RateX/ |
 | 🐳 Local Docker | `http://localhost:5173` (dev) · `http://localhost:3000` (prod) |
 
 ---
