@@ -82,7 +82,8 @@ func getVisualizerStateForFixedWindow(ip string, server *config.Server, context 
 }
 
 func getVisualizerStateForSlidingWindow(ip string, server *config.Server, context context.Context) (count int64, requestAgesMs []float64, percentUsed float64) {
-	windowStart := float64(time.Now().Add(-time.Duration(server.GetConfig().WindowSecs)*time.Second).UnixNano())
+	// Scores in the sorted-set are stored as seconds (float64), matching sliding_window.go (UnixNano / 1e9).
+	windowStart := float64(time.Now().Add(-time.Duration(server.GetConfig().WindowSecs)*time.Second).UnixNano()) / 1e9
 	minStr := fmt.Sprintf("%f", windowStart)
 	key := "sw:" + ip
 	total, _ := server.GetRedisClient().ZCount(context, key, minStr, "+inf").Result()
@@ -90,11 +91,12 @@ func getVisualizerStateForSlidingWindow(ip string, server *config.Server, contex
 	recent, _ := server.GetRedisClient().ZRevRangeByScore(context, key, &redis.ZRangeBy{
 		Max: "+inf", Min: minStr, Count: 500,
 	}).Result()
-	nowNs := float64(time.Now().UnixNano())
+	// scores and members are both seconds (float64); compute age in milliseconds
+	nowSec := float64(time.Now().UnixNano()) / 1e9
 	ages := make([]float64, 0, len(recent))
 	for _, m := range recent {
 		ts, _ := strconv.ParseFloat(m, 64)
-		ageMs := math.Round((nowNs-ts)/1e5) / 10 // round to 0.1ms
+		ageMs := math.Round((nowSec-ts)*10000) / 10 // round to 0.1 ms
 		if ageMs >= 0 {
 			ages = append(ages, ageMs)
 		}

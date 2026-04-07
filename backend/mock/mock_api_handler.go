@@ -23,17 +23,13 @@ func HandleMockHealthCheck(resw http.ResponseWriter, req *http.Request) {
 	})
 }
 
-// HandleListProducts returns products filtered by the "category" query param.
+// HandleListProducts returns all products, or filtered by the optional "category" query param.
 func HandleListProducts(resw http.ResponseWriter, req *http.Request) {
 	category := req.URL.Query().Get("category")
-	if category == "" {
-		utils.JsonResponse(resw, http.StatusBadRequest, map[string]string{"error": constants.ErrCategoryRequired})
-		return
-	}
 
 	var filtered []Product
 	for _, p := range mockProducts {
-		if strings.EqualFold(p.Category, category) {
+		if category == "" || strings.EqualFold(p.Category, category) {
 			filtered = append(filtered, p)
 		}
 	}
