@@ -1,0 +1,160 @@
+/* =============================================================================
+   RESULTS  —  results header, badges, progress bars, table, pills, spinner
+   ============================================================================= */
+
+
+/* ── Results header row ───────────────────────────────────────────────────── */
+.results-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: .75rem;
+}
+
+.results-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .5rem;
+  flex: 1;
+}
+
+
+/* ── Clear button ─────────────────────────────────────────────────────────── */
+.btn-clear {
+  flex-shrink: 0;
+  padding: .3rem .7rem;
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  transition: all .12s;
+}
+
+.btn-clear:hover {
+  background: var(--brand-active-bg);
+  border-color: var(--border-focus);
+  color: var(--text-heading);
+}
+
+
+/* ── Truncation notice ──────────────────────────────────────────────────── */
+.truncation-note {
+  font-size: .75rem;
+  margin-bottom: .75rem;
+  padding: .35rem .6rem;
+  background: var(--bg-faint);
+  border: 1px solid var(--border-faint);
+  border-radius: 6px;
+  color: var(--text-dim);
+}
+
+
+/* ── Status badges (summary row) ─────────────────────────────────────────── */
+.badge {
+  padding: .25rem .65rem;
+  font-size: .78rem;
+  font-weight: 600;
+  border-radius: 20px;
+}
+
+.badge--pass  { background: var(--status-pass-bg);   color: var(--status-pass-text);  }
+.badge--block { background: var(--status-block-bg);  color: var(--status-block-text); }
+.badge--err   { background: var(--status-orange-bg); color: var(--status-orange-text);}
+.badge--avg   { background: var(--status-avg-bg);    color: var(--status-avg-text);   }
+
+
+/* ── Progress bar (pass rate) ─────────────────────────────────────────────── */
+.prog-bar-wrap {
+  flex: 1;
+  min-width: 80px;
+  height: 8px;
+  overflow: hidden;
+  background: var(--progress-track);
+  border-radius: 4px;
+}
+
+.prog-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--progress-pass1), var(--progress-pass2));
+  border-radius: 4px;
+  transition: width .3s ease;
+}
+
+.prog-label {
+  min-width: 4rem;
+  font-size: .78rem;
+  text-align: right;
+  color: var(--text-dim);
+}
+
+
+/* ── Results table ────────────────────────────────────────────────────────── */
+.results-table-wrap {
+  overflow-x: auto;
+}
+
+.results-table {
+  width: 100%;
+  font-size: .84rem;
+  border-collapse: collapse;
+}
+
+.results-table th {
+  text-align: left;
+  padding: .5rem .75rem;
+  font-size: .72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.results-table td {
+  padding: .45rem .75rem;
+  border-bottom: 1px solid var(--table-row-border);
+}
+
+/* Tinted rows for blocked / error responses */
+.row--block { background: var(--table-row-block-tint); }
+.row--err   { background: var(--table-row-err-tint); }
+
+/* Cell-specific styles */
+.cell-n     { width: 2.5rem; font-size: .78rem; color: var(--text-dim); }
+.cell-reset { font-size: .78rem; color: var(--text-dim); }
+.cell-ms    { text-align: right; color: var(--text-label); }
+
+
+/* ── Status pills (per-row) ───────────────────────────────────────────────── */
+.status-pill {
+  display: inline-block;
+  padding: .15rem .5rem;
+  font-size: .8rem;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+.pill--ok  { background: var(--status-pass-bg);    color: var(--status-pass-text);  }
+.pill--429 { background: var(--status-block-bg);   color: var(--status-block-text); }
+.pill--err { background: var(--status-orange-bg);  color: var(--status-orange-text);}
+
+
+/* ── Loading spinner ──────────────────────────────────────────────────────── */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--spinner-track);
+  border-top-color: var(--spinner-tip);
+  animation: spin .7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

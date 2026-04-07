@@ -1,10 +1,8 @@
 /* =============================================================================
    THEME TOKENS  —  RateX
-   Design token file. All color values live here.
-   Usage:  var(--token-name)
-   Themes: [data-theme="dark"]  (default)
-           [data-theme="light"] (opt-in)
-   In React, toggle: document.documentElement.dataset.theme = 'light' | 'dark'
+   All color/design tokens live here.  Usage: var(--token-name)
+   Themes:  [data-theme="dark"]  (default)  /  [data-theme="light"] (opt-in)
+   To toggle from React:  document.documentElement.dataset.theme = 'light'
    ============================================================================= */
 
 
@@ -15,49 +13,56 @@
 [data-theme="dark"] {
 
   /* ── Surface layers (darkest → lightest) ─────────────────────────────── */
-  --bg-page:          #0f1117;   /* main body background                    */
-  --bg-card:          #1a1d27;   /* cards, header panels                    */
-  --bg-input:         #111420;   /* inputs, algo buttons, stat cards        */
-  --bg-bucket:        #0d1018;   /* token-bucket inner background           */
-  --bg-subtle:        #1e2538;   /* badge-avg, btn-clear, table row accents */
-  --bg-faint:         #151820;   /* truncation note background              */
+  --bg-page:          #0f1117;
+  --bg-card:          #1a1d27;
+  --bg-input:         #111420;
+  --bg-bucket:        #0d1018;
+  --bg-subtle:        #1e2538;
+  --bg-faint:         #151820;
 
   /* ── Borders ─────────────────────────────────────────────────────────── */
-  --border-default:   #2d3148;   /* standard borders                        */
-  --border-strong:    #3d4468;   /* btn-stop, btn-clear hover               */
-  --border-faint:     #252840;   /* truncation note border                  */
-  --border-focus:     #5a62a4;   /* focus / hover border accent             */
+  --border-default:   #2d3148;
+  --border-strong:    #3d4468;
+  --border-faint:     #252840;
+  --border-focus:     #5a62a4;
 
   /* ── Text hierarchy ──────────────────────────────────────────────────── */
-  --text-primary:     #e2e8f0;   /* main body copy                          */
-  --text-heading:     #c4c9e6;   /* card titles, hover text                 */
-  --text-secondary:   #9ba3c4;   /* muted / supporting copy                 */
-  --text-label:       #7a82a8;   /* field labels, info titles               */
-  --text-dim:         #5a6282;   /* table headers, progress labels          */
-  --text-faint:       #3d4468;   /* tick marks, legend text                 */
-  --text-on-brand:    #ffffff;   /* text on colored / dark backgrounds      */
+  --text-primary:     #e2e8f0;
+  --text-heading:     #c4c9e6;
+  --text-secondary:   #9ba3c4;
+  --text-label:       #7a82a8;
+  --text-dim:         #5a6282;
+  --text-faint:       #3d4468;
+  --text-on-brand:    #ffffff;
 
   /* ── Brand / Primary ─────────────────────────────────────────────────── */
-  --brand:            #7c6bf8;   /* primary accent (purple)                 */
-  --brand-hover:      #6a59e6;   /* on hover                                */
-  --brand-light:      #a78bfa;   /* lighter variant for gradients           */
-  --brand-active-bg:  #2d2760;   /* selected/active button background       */
-  --brand-active-text:#c4b5fd;   /* selected/active button text             */
+  --brand:            #7c6bf8;
+  --brand-hover:      #6a59e6;
+  --brand-light:      #a78bfa;
+  --brand-active-bg:  #2d2760;
+  --brand-active-text:#c4b5fd;
+  /* semi-transparent brand for gradients */
+  --brand-alpha:      rgba(124, 107, 248, 0.67);
+  --brand-light-alpha:rgba(167, 139, 250, 0.67);
 
   /* ── Status: success / pass ──────────────────────────────────────────── */
   --status-pass-bg:         #1a3a2a;
   --status-pass-text:       #4ade80;
   --status-pass-border:     #14532d;
-  --status-pass-bg-glow:    #14532d33;  /* semi-transparent badge bg       */
+  --status-pass-bg-glow:    #14532d33;
+  /* semi-transparent for gradients */
+  --status-pass-alpha:      rgba(74, 222, 128, 0.67);
 
   /* ── Status: rate-limited / blocked ─────────────────────────────────── */
   --status-block-bg:        #3a2020;
   --status-block-text:      #f87171;
+  --status-block-alpha:     rgba(248, 113, 113, 0.67);
 
   /* ── Status: warning (amber) ─────────────────────────────────────────── */
   --status-warn-bg:         #2a2010;
   --status-warn-border:     #5a4010;
   --status-warn-text:       #fb923c;
+  --status-warn-alpha:      rgba(251, 146, 60, 0.67);
 
   /* ── Status: error (red) ─────────────────────────────────────────────── */
   --status-err-bg:          #3a1a1a;
@@ -84,13 +89,20 @@
 
   /* ── Table ───────────────────────────────────────────────────────────── */
   --table-row-border:       #1e2538;
-  --table-row-block-tint:   rgba(239,68,68,.04);
-  --table-row-err-tint:     rgba(251,146,60,.04);
+  --table-row-block-tint:   rgba(239, 68, 68, .04);
+  --table-row-err-tint:     rgba(251, 146, 60, .04);
 
   /* ── Spinner ─────────────────────────────────────────────────────────── */
-  --spinner-track:    rgba(255,255,255,.3);
+  --spinner-track:    rgba(255, 255, 255, .3);
   --spinner-tip:      #ffffff;
-}
+
+  /* ── Visualizer backgrounds ──────────────────────────────────────────── */
+  --viz-pass-bg:    rgba(20, 83, 45, 0.13);
+  --viz-warn-bg:    rgba(124, 45, 18, 0.13);
+  --viz-block-bg:   rgba(127, 29, 29, 0.13);
+  /* ── Token-bucket overlay text legibility ──────────────────────────────── */
+  --viz-tb-text-shadow: 0 0 10px rgba(0, 0, 0, 0.85), 0 1px 2px rgba(0, 0, 0, 0.6);
+  --viz-tb-den-color:   var(--text-dim);}
 
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -127,21 +139,26 @@
   --brand-light:      #8b7af0;
   --brand-active-bg:  #ebe8ff;
   --brand-active-text:#4a3ab8;
+  --brand-alpha:      rgba(107, 92, 231, 0.67);
+  --brand-light-alpha:rgba(139, 122, 240, 0.67);
 
   /* ── Status: success / pass ──────────────────────────────────────────── */
   --status-pass-bg:         #dcfce7;
   --status-pass-text:       #16a34a;
   --status-pass-border:     #86efac;
-  --status-pass-bg-glow:    rgba(134,239,172,.25);
+  --status-pass-bg-glow:    rgba(134, 239, 172, .25);
+  --status-pass-alpha:      rgba(22, 163, 74, 0.67);
 
   /* ── Status: rate-limited / blocked ─────────────────────────────────── */
   --status-block-bg:        #fee2e2;
   --status-block-text:      #dc2626;
+  --status-block-alpha:     rgba(220, 38, 38, 0.67);
 
   /* ── Status: warning (amber) ─────────────────────────────────────────── */
   --status-warn-bg:         #fff7ed;
   --status-warn-border:     #fed7aa;
   --status-warn-text:       #ea580c;
+  --status-warn-alpha:      rgba(234, 88, 12, 0.67);
 
   /* ── Status: error (red) ─────────────────────────────────────────────── */
   --status-err-bg:          #fee2e2;
@@ -168,10 +185,17 @@
 
   /* ── Table ───────────────────────────────────────────────────────────── */
   --table-row-border:       #e8eaf2;
-  --table-row-block-tint:   rgba(220,38,38,.05);
-  --table-row-err-tint:     rgba(234,88,12,.05);
+  --table-row-block-tint:   rgba(220, 38, 38, .05);
+  --table-row-err-tint:     rgba(234, 88, 12, .05);
 
   /* ── Spinner ─────────────────────────────────────────────────────────── */
-  --spinner-track:    rgba(0,0,0,.15);
+  --spinner-track:    rgba(0, 0, 0, .15);
   --spinner-tip:      #6b5ce7;
-}
+
+  /* ── Visualizer backgrounds ──────────────────────────────────────────── */
+  --viz-pass-bg:    rgba(134, 239, 172, 0.15);
+  --viz-warn-bg:    rgba(253, 186, 116, 0.15);
+  --viz-block-bg:   rgba(252, 165, 165, 0.15);
+  /* ── Token-bucket overlay text legibility ──────────────────────────────── */
+  --viz-tb-text-shadow: 0 1px 4px rgba(255, 255, 255, 0.95), 0 0 8px rgba(255, 255, 255, 0.7);
+  --viz-tb-den-color:   var(--text-secondary);}

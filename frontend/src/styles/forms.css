@@ -1,0 +1,311 @@
+/* =============================================================================
+   FORMS & CONTROLS  —  inputs, buttons, algo selectors, chips, mode radio,
+                         warning box, burst progress, config feedback, algo info
+   ============================================================================= */
+
+
+/* ── Field layout helpers ─────────────────────────────────────────────────── */
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .75rem;
+  margin: 1rem 0;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field-label {
+  display: block;
+  font-size: .75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-label);
+  margin-bottom: .4rem;
+}
+
+
+/* ── Text inputs & selects ────────────────────────────────────────────────── */
+.input {
+  width: 100%;
+  padding: .5rem .75rem;
+  font-size: .9rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color .15s;
+}
+
+.input:focus {
+  border-color: var(--brand);
+}
+
+select.input {
+  cursor: pointer;
+}
+
+
+/* ── Algorithm selector grid ──────────────────────────────────────────────── */
+.algo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .5rem;
+  margin-bottom: 1rem;
+}
+
+.algo-btn {
+  padding: .5rem .4rem;
+  font-size: .78rem;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  transition: all .15s;
+}
+
+.algo-btn:hover {
+  border-color: var(--brand);
+  color: var(--text-heading);
+}
+
+.algo-btn--active {
+  font-weight: 600;
+  background: var(--brand-active-bg);
+  border-color: var(--brand);
+  color: var(--brand-active-text);
+}
+
+
+/* ── Generic action buttons ───────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  width: 100%;
+  padding: .6rem 1.25rem;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  margin-top: 1rem;
+  transition: opacity .15s, transform .1s;
+}
+
+.btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.btn:not(:disabled):active {
+  transform: scale(.98);
+}
+
+/* Primary (purple) */
+.btn--primary {
+  background: var(--brand);
+  color: var(--text-on-brand);
+}
+
+.btn--primary:not(:disabled):hover {
+  background: var(--brand-hover);
+}
+
+/* Fire (send burst) */
+.fire-row {
+  display: flex;
+  gap: .5rem;
+  margin-top: 1rem;
+}
+
+.fire-row .btn {
+  margin-top: 0;
+}
+
+.btn--fire {
+  flex: 1;
+  padding: .75rem 1.25rem;
+  font-size: 1rem;
+  background: linear-gradient(135deg, var(--fire-from), var(--fire-to));
+  color: var(--text-on-brand);
+}
+
+.btn--fire:not(:disabled):hover {
+  opacity: .9;
+}
+
+/* Stop button */
+.btn--stop {
+  width: auto;
+  flex-shrink: 0;
+  padding: .6rem .9rem;
+  font-size: .85rem;
+  background: var(--border-default);
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+}
+
+.btn--stop:hover {
+  background: var(--border-strong);
+}
+
+
+/* ── Request count + preset chips ────────────────────────────────────────── */
+.req-count-row   { display: flex; flex-direction: column; gap: .5rem; }
+.req-count-input { max-width: 120px; }
+
+.preset-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem;
+}
+
+.chip {
+  padding: .2rem .55rem;
+  font-size: .75rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  transition: all .12s;
+}
+
+.chip:hover {
+  border-color: var(--brand);
+  color: var(--text-heading);
+}
+
+.chip--active {
+  background: var(--brand-active-bg);
+  border-color: var(--brand);
+  color: var(--brand-active-text);
+}
+
+
+/* ── Mode radio (single / burst) ──────────────────────────────────────────── */
+.mode-group {
+  display: flex;
+  gap: .75rem;
+  margin-bottom: .5rem;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: .5rem;
+  font-size: .82rem;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  transition: all .15s;
+}
+
+.mode-btn input {
+  display: none;
+}
+
+.mode-btn--active {
+  background: var(--brand-active-bg);
+  border-color: var(--brand);
+  color: var(--brand-active-text);
+}
+
+
+/* ── Warning box ──────────────────────────────────────────────────────────── */
+.warn-box {
+  margin-top: .75rem;
+  padding: .5rem .75rem;
+  font-size: .78rem;
+  line-height: 1.5;
+  background: var(--status-warn-bg);
+  border: 1px solid var(--status-warn-border);
+  border-radius: 8px;
+  color: var(--status-warn-text);
+}
+
+
+/* ── Burst progress bar ───────────────────────────────────────────────────── */
+.burst-progress {
+  position: relative;
+  height: 6px;
+  overflow: hidden;
+  margin: .75rem 0 0;
+  background: var(--progress-track);
+  border-radius: 3px;
+}
+
+.burst-progress-bar {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--progress-burst1), var(--progress-burst2));
+  border-radius: 3px;
+  transition: width .1s linear;
+}
+
+.burst-progress-label {
+  position: absolute;
+  right: 0; top: -18px;
+  font-size: .7rem;
+  color: var(--text-label);
+}
+
+
+/* ── Config apply feedback ────────────────────────────────────────────────── */
+.config-msg {
+  margin-top: .75rem;
+  padding: .4rem .75rem;
+  font-size: .82rem;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+.config-msg--ok  {
+  background: var(--status-pass-bg);
+  color: var(--status-pass-text);
+}
+
+.config-msg--err {
+  background: var(--status-err-bg);
+  color: var(--status-err-text);
+}
+
+
+/* ── Algo info box ────────────────────────────────────────────────────────── */
+.algo-info {
+  margin-top: 1.25rem;
+  padding: .75rem 1rem;
+  background: var(--bg-input);
+  border-left: 3px solid var(--brand);
+  border-radius: 0 8px 8px 0;
+}
+
+.algo-info-title {
+  font-size: .72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-label);
+  margin-bottom: .4rem;
+}
+
+.algo-info p {
+  font-size: .82rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}

@@ -1,0 +1,11 @@
+/* =============================================================================
+   App.css  —  global style entry point
+   All styles are split into focused files in src/styles/ for maintainability.
+   Import order matters: theme (tokens) first, then layout, then components.
+   ============================================================================= */
+
+@import './styles/theme.css';
+@import './styles/layout.css';
+@import './styles/forms.css';
+@import './styles/results.css';
+@import './styles/visualizer.css';

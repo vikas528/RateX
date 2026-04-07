@@ -1,0 +1,367 @@
+/* =============================================================================
+   VISUALIZER  —  live visualizer panel + all algorithm-specific views
+                  (Token Bucket, Fixed Window, Sliding Window)
+   ============================================================================= */
+
+
+/* ── Visualizer card wrapper ──────────────────────────────────────────────── */
+.viz-card {
+  margin-bottom: 1.25rem;
+}
+
+.viz-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+
+/* ── LIVE badge & pulse dot ───────────────────────────────────────────────── */
+.viz-live-badge {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .2rem .65rem;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  background: var(--status-pass-bg-glow);
+  border: 1px solid var(--status-pass-border);
+  border-radius: 20px;
+  color: var(--status-pass-text);
+}
+
+.viz-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--status-pass-text);
+  animation: viz-ping 1.4s ease-in-out infinite;
+}
+
+@keyframes viz-ping {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .4; transform: scale(.7); }
+}
+
+
+/* ── Loading placeholder ──────────────────────────────────────────────────── */
+.viz-loading {
+  padding: 2rem;
+  font-size: .9rem;
+  text-align: center;
+  color: var(--text-dim);
+}
+
+
+/* ── Shared stat card ─────────────────────────────────────────────────────── */
+.viz-stat-card {
+  padding: .75rem 1rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+}
+
+.viz-stat-label {
+  font-size: .7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--text-dim);
+  margin-bottom: .3rem;
+}
+
+.viz-stat-value {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: .15rem;
+}
+
+.viz-stat-sub {
+  font-size: .8rem;
+  color: var(--text-dim);
+}
+
+
+/* ── Stat card grids ──────────────────────────────────────────────────────── */
+.viz-stats-grid        { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+.viz-stats-grid--2col  { grid-template-columns: 1fr 1fr; }
+.viz-stats-grid--row   { display: flex; gap: .6rem; }
+
+
+/* ── Stat card with fill bar ──────────────────────────────────────────────── */
+.viz-stat-bar-card {
+  padding: .7rem 1rem;
+  grid-column: 1 / -1;
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+}
+
+.viz-bar-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: .45rem;
+  font-size: .78rem;
+  color: var(--text-dim);
+}
+
+.viz-bar-track {
+  height: 8px;
+  overflow: hidden;
+  background: var(--progress-track);
+  border-radius: 4px;
+}
+
+.viz-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+
+/* ── Legend dot ───────────────────────────────────────────────────────────── */
+.viz-legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: .25rem;
+  vertical-align: middle;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/*  TOKEN BUCKET                                                               */
+/* ══════════════════════════════════════════════════════════════════════════ */
+
+.viz-tb-wrap {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.viz-tb-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .6rem;
+  flex-shrink: 0;
+}
+
+
+/* Bucket container */
+.viz-tb-bucket {
+  position: relative;
+  width: 90px;
+  height: 200px;
+  overflow: hidden;
+  background: var(--bg-bucket);
+  border: 2px solid var(--border-default);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+}
+
+
+/* Liquid fill */
+.viz-tb-liquid {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 0 0 10px 10px;
+  will-change: height;
+}
+
+/* Wave on liquid surface  —  color driven by inline --wc CSS variable */
+.viz-wave {
+  position: absolute;
+  top: -6px; left: -20%;
+  width: 140%;
+  height: 12px;
+  opacity: .8;
+  background: var(--wc, var(--status-pass-text));
+  border-radius: 50%;
+  animation: wave-rock 2.2s ease-in-out infinite;
+}
+
+@keyframes wave-rock {
+  0%, 100% { transform: translateX(0)   scaleY(1); }
+  33%       { transform: translateX(4%)  scaleY(.7); }
+  66%       { transform: translateX(-4%) scaleY(.9); }
+}
+
+
+/* Number overlay */
+.viz-tb-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.viz-tb-num {
+  font-size: 1.35rem;
+  font-weight: 700;
+  text-shadow: var(--viz-tb-text-shadow);
+}
+
+.viz-tb-den {
+  font-size: .75rem;
+  color: var(--viz-tb-den-color);
+  text-shadow: var(--viz-tb-text-shadow);
+}
+
+
+/* Tick marks */
+.viz-tick {
+  position: absolute;
+  right: 0;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  pointer-events: none;
+  border-top: 1px dashed var(--border-default);
+}
+
+.viz-tick--top {
+  bottom: 100%;
+  border-top: none;
+}
+
+.viz-tick-lbl {
+  font-size: .62rem;
+  line-height: 1;
+  padding-right: 2px;
+  color: var(--text-faint);
+}
+
+
+/* Refill drop animation */
+.viz-drops {
+  display: flex;
+  gap: 8px;
+  height: 28px;
+  align-items: flex-start;
+  overflow: hidden;
+}
+
+.viz-drop {
+  width: 5px;
+  height: 9px;
+  opacity: 0;
+  background: var(--status-pass-text);
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  animation: drop-fall 1500ms ease-in infinite;
+}
+
+@keyframes drop-fall {
+  0%   { transform: translateY(-10px); opacity: 0; }
+  15%  { opacity: .9; }
+  60%  { transform: translateY(18px);  opacity: .7; }
+  100% { transform: translateY(28px);  opacity: 0; }
+}
+
+.viz-drops-label {
+  font-size: .72rem;
+  color: var(--text-dim);
+}
+
+/* Token Bucket stat grid takes remaining width */
+.viz-tb-wrap .viz-stats-grid              { flex: 1; min-width: 200px; }
+.viz-tb-wrap .viz-stats-grid .viz-stat-bar-card { grid-column: 1 / -1; }
+
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/*  FIXED WINDOW                                                               */
+/* ══════════════════════════════════════════════════════════════════════════ */
+
+.viz-fw-wrap {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.viz-fw-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+  flex-shrink: 0;
+}
+
+.viz-fw-svg {
+  width: 150px;
+  height: 150px;
+}
+
+.viz-fw-ring-legend {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .72rem;
+  white-space: nowrap;
+  color: var(--text-dim);
+}
+
+.viz-fw-right {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/*  SLIDING WINDOW                                                             */
+/* ══════════════════════════════════════════════════════════════════════════ */
+
+.viz-sw-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+
+.viz-sw-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+
+.viz-sw-count {
+  display: flex;
+  align-items: baseline;
+  gap: .3rem;
+  flex-wrap: wrap;
+}
+
+.viz-sw-timeline-wrap {
+  width: 100%;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.viz-sw-svg {
+  width: 100%;
+  display: block;
+}
+
+.viz-sw-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .2rem;
+  font-size: .73rem;
+  color: var(--text-faint);
+}
