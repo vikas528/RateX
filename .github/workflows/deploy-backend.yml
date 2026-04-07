@@ -1,42 +1,41 @@
 # =============================================================================
 #  deploy-backend.yml
 #
-#  Triggers a Render redeploy of the backend service whenever code is merged
-#  to `main`.  Render rebuilds the Docker image and rolls out the new version.
+#  Deploys the Go backend to Fly.io on every push to main that touches
+#  backend/ code.  Fly.io rebuilds the Docker image and rolls it out.
 #
-#  Required GitHub repository secret  (Settings → Secrets and variables →
-#  Actions → Secrets tab):
-#    RENDER_DEPLOY_HOOK_URL   The deploy-hook URL from your Render service.
-#                             Render dashboard → ratex-backend → Settings →
-#                             "Deploy Hook" → copy the full URL.
+#  Free tier: 3 shared-cpu-1x 256 MB VMs free. The app is configured with
+#  auto_stop_machines so it costs $0 when idle.
+#  Note: Fly.io requires a CC on file for identity verification, but the
+#  free tier is not charged for small apps like this.
 #
-#  NOTE: Only changes under backend/ and render.yaml trigger this job.
-#        Pure frontend changes skip the backend deploy automatically.
+#  Required GitHub repository secret  (Settings → Secrets → Actions):
+#    FLY_API_TOKEN   fly tokens create deploy -x 999999h
 # =============================================================================
 
-name: Deploy Backend → Render
+name: Deploy Backend → Fly.io
 
 on:
   push:
     branches: [main]
     paths:
       - backend/**
-      - render.yaml
-  workflow_dispatch:    # allow manual trigger
+  workflow_dispatch:
 
 jobs:
   deploy:
-    name: Trigger Render deploy
+    name: Deploy to Fly.io
     runs-on: ubuntu-latest
 
     steps:
-      - name: Trigger Render deploy hook
-        run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}")
-          echo "Render response: $STATUS"
-          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then
-            echo "::error::Render deploy hook failed with HTTP $STATUS"
-            exit 1
-          fi
-          echo "::notice::Render deploy triggered successfully (HTTP $STATUS)"
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy
+        working-directory: backend
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl deploy --remote-only
