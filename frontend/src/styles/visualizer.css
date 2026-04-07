@@ -40,6 +40,19 @@
   animation: viz-ping 1.4s ease-in-out infinite;
 }
 
+/* IDLE badge variant — muted colour, no animation */
+.viz-live-badge--idle {
+  background: var(--bg-input);
+  border-color: var(--border-default);
+  color: var(--text-dim);
+}
+
+.viz-pulse--idle {
+  background: var(--text-dim);
+  animation: none;
+  opacity: .55;
+}
+
 @keyframes viz-ping {
   0%, 100% { opacity: 1; transform: scale(1); }
   50%       { opacity: .4; transform: scale(.7); }

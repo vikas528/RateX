@@ -6,7 +6,10 @@
  * prop so the parent (App) can wire it to a piece of its own state.
  */
 import { BURST_ENDPOINTS } from '../../constants/api'
-import { BURST_PRESETS, CONCURRENT_BATCH_SIZE } from '../../constants/ui'
+import {
+  BURST_PRESETS_SEQUENTIAL,
+  BURST_PRESETS_CONCURRENT,
+} from '../../constants/ui'
 
 export default function BurstPanel({
   // burst hook state
@@ -16,6 +19,8 @@ export default function BurstPanel({
   delayMs,
   isBursting,
   progress,
+  minDelayRequired,
+  effectiveDelay,
   // burst hook actions
   setMode,
   setDelayMs,
@@ -27,6 +32,18 @@ export default function BurstPanel({
   endpoint,
   setEndpoint,
 }) {
+  const maxForMode   = mode === 'concurrent' ? endpoint.maxConcurrent : endpoint.maxSequential
+  const presets      = mode === 'concurrent' ? BURST_PRESETS_CONCURRENT : BURST_PRESETS_SEQUENTIAL
+  const overCap      = numReqs > maxForMode
+  const delayAutoUp  = mode === 'sequential' && minDelayRequired > 0 && delayMs < minDelayRequired
+
+  // Auto-clamp when switching mode (concurrent/sequential have different caps)
+  const handleModeChange = (m) => {
+    setMode(m)
+    const cap = m === 'concurrent' ? endpoint.maxConcurrent : endpoint.maxSequential
+    if (numReqs > cap) setNumReqs(cap)
+  }
+
   return (
     <div className="card">
       <h2 className="card-title">Burst Test</h2>
@@ -45,27 +62,45 @@ export default function BurstPanel({
 
       {/* ── Request count ── */}
       <div style={{ marginTop: '1.2rem' }}>
-        <label className="field-label">Number of Requests</label>
+        <label className="field-label">
+          Number of Requests
+          <span className="field-cap-hint">
+            {mode === 'concurrent'
+              ? `(max ${endpoint.maxConcurrent} concurrent)`
+              : `(max ${endpoint.maxSequential.toLocaleString()} sequential)`}
+          </span>
+        </label>
         <div className="req-count-row">
           <input
             type="number"
-            className="input req-count-input"
-            min="1" max="10000"
+            className={`input req-count-input ${overCap ? 'input--warn' : ''}`}
+            min="1"
+            max={maxForMode}
             value={numReqsRaw}
             onChange={e => handleNumReqsChange(e.target.value)}
           />
           <div className="preset-chips">
-            {BURST_PRESETS.map(p => (
+            {presets.map(p => (
               <button
                 key={p}
-                className={`chip ${numReqs === p ? 'chip--active' : ''}`}
-                onClick={() => setNumReqs(p)}
+                className={`chip ${numReqs === p ? 'chip--active' : ''} ${p > maxForMode ? 'chip--disabled' : ''}`}
+                onClick={() => setNumReqs(Math.min(p, maxForMode))}
+                disabled={p > maxForMode}
               >
                 {p >= 1000 ? `${p / 1000}k` : p}
               </button>
             ))}
           </div>
         </div>
+
+        {/* Over-cap warning */}
+        {overCap && (
+          <div className="warn-box warn-box--cap">
+            ⚠ This demo server is intentionally lean — {mode === 'concurrent' ? 'concurrent' : 'sequential'} requests
+            are capped at <strong>{maxForMode}</strong> for this endpoint to keep results meaningful and avoid
+            exhausting the connection pool. The burst will run with {maxForMode} requests.
+          </div>
+        )}
       </div>
 
       {/* ── Mode ── */}
@@ -73,7 +108,7 @@ export default function BurstPanel({
       <div className="mode-group">
         {['sequential', 'concurrent'].map(m => (
           <label key={m} className={`mode-btn ${mode === m ? 'mode-btn--active' : ''}`}>
-            <input type="radio" name="mode" value={m} checked={mode === m} onChange={() => setMode(m)} />
+            <input type="radio" name="mode" value={m} checked={mode === m} onChange={() => handleModeChange(m)} />
             {m === 'sequential' ? '⏱ Sequential' : '⚡ Concurrent'}
           </label>
         ))}
@@ -82,21 +117,29 @@ export default function BurstPanel({
       {/* ── Sequential delay ── */}
       {mode === 'sequential' && (
         <div className="field" style={{ marginTop: '.75rem' }}>
-          <label className="field-label">Delay between requests (ms)</label>
+          <label className="field-label">
+            Delay between requests (ms)
+            {minDelayRequired > 0 && (
+              <span className="field-cap-hint">(min {minDelayRequired} ms for {numReqs} requests)</span>
+            )}
+          </label>
           <input
-            type="number" className="input" min="0" max="60000" step="10"
+            type="number"
+            className={`input ${delayAutoUp ? 'input--warn' : ''}`}
+            min="0"
+            max="60000"
+            step="10"
             value={delayMs}
             onChange={e => setDelayMs(Number(e.target.value))}
             placeholder="0 = no delay"
           />
-        </div>
-      )}
-
-      {/* ── Large concurrent warning ── */}
-      {mode === 'concurrent' && numReqs > 500 && (
-        <div className="warn-box">
-          ⚠ {numReqs.toLocaleString()} concurrent requests will be sent in
-          batches of {CONCURRENT_BATCH_SIZE} to avoid crashing the browser.
+          {delayAutoUp && (
+            <div className="warn-box">
+              ⚠ A minimum delay of <strong>{minDelayRequired} ms</strong> is enforced for{' '}
+              {numReqs} sequential requests to protect the server.
+              Effective delay: <strong>{effectiveDelay} ms</strong>.
+            </div>
+          )}
         </div>
       )}
 
@@ -116,7 +159,7 @@ export default function BurstPanel({
           disabled={isBursting}
         >
           {isBursting ? <span className="spinner" /> : '🔥'}&nbsp;
-          Fire {numReqs.toLocaleString()} Requests
+          Fire {Math.min(numReqs, maxForMode).toLocaleString()} Requests
         </button>
         {isBursting && (
           <button className="btn btn--stop" onClick={onStopBurst}>
@@ -127,3 +170,4 @@ export default function BurstPanel({
     </div>
   )
 }
+

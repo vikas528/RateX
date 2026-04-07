@@ -27,6 +27,16 @@
   margin-bottom: .4rem;
 }
 
+/** Small muted hint appended to a field label (e.g. "(max 50 concurrent)") */
+.field-cap-hint {
+  font-size: .68rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-dim);
+  margin-left: .4rem;
+}
+
 
 /* ── Text inputs & selects ────────────────────────────────────────────────── */
 .input {
@@ -43,6 +53,15 @@
 
 .input:focus {
   border-color: var(--brand);
+}
+
+/** Highlight an input that has a constraint violation / auto-enforcement active */
+.input--warn {
+  border-color: var(--status-warn-border);
+}
+
+.input--warn:focus {
+  border-color: var(--status-warn-border);
 }
 
 select.input {
@@ -192,6 +211,13 @@ select.input {
   color: var(--brand-active-text);
 }
 
+/** Chip that exceeds the current mode's cap — visually disabled */
+.chip--disabled {
+  opacity: .35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 
 /* ── Mode radio (single / burst) ──────────────────────────────────────────── */
 .mode-group {
@@ -263,6 +289,57 @@ select.input {
   right: 0; top: -18px;
   font-size: .7rem;
   color: var(--text-label);
+}
+
+
+/* ── Config panel header row (title + dirty badge) ───────────────────────── */
+.config-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .25rem;
+}
+
+.config-dirty-badge {
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .05em;
+  padding: .15rem .5rem;
+  border-radius: 12px;
+  background: var(--status-warn-bg);
+  border: 1px solid var(--status-warn-border);
+  color: var(--status-warn-text);
+  animation: dirty-pulse 2s ease-in-out infinite;
+}
+
+@keyframes dirty-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .6; }
+}
+
+/* Loading / error placeholder inside the config card */
+.config-status-msg {
+  padding: 1.5rem;
+  text-align: center;
+  font-size: .88rem;
+  border-radius: 8px;
+  margin-top: .5rem;
+}
+
+.config-status-msg--loading {
+  background: var(--bg-input);
+  color: var(--text-dim);
+}
+
+.config-status-msg--error {
+  background: var(--status-err-bg);
+  color: var(--status-err-text);
+  border: 1px solid var(--status-err-text);
+}
+
+/* Primary button muted variant (when config is in sync / no dirty changes) */
+.btn--primary-muted {
+  opacity: .65;
 }
 
 

@@ -29,8 +29,34 @@ export const ROUTES = {
 export const apiUrl = (route) => `${API_BASE}${route}`
 
 // ── Test endpoints shown in the Burst panel ───────────────────────────────────
+/**
+ * Each endpoint carries its own concurrency/sequential caps so that the UI
+ * can enforce sensible limits per route.  These are frontend-only guardrails —
+ * they do not affect backend rate limiting.
+ *
+ * maxConcurrent  — maximum simultaneous requests allowed for this endpoint
+ * maxSequential  — maximum total sequential requests allowed for this endpoint
+ */
 export const BURST_ENDPOINTS = [
-  { label: 'GET /ratex/products',            method: 'GET',  url: ROUTES.PRODUCTS },
-  { label: 'GET /ratex/users/me',            method: 'GET',  url: ROUTES.USERS_ME },
-  { label: 'GET /ratex/health (not limited)',method: 'GET',  url: ROUTES.HEALTH },
+  {
+    label: 'GET /ratex/products',
+    method: 'GET',
+    url: ROUTES.PRODUCTS,
+    maxConcurrent: 50,
+    maxSequential: 2000,
+  },
+  {
+    label: 'GET /ratex/users/me',
+    method: 'GET',
+    url: ROUTES.USERS_ME,
+    maxConcurrent: 50,
+    maxSequential: 2000,
+  },
+  {
+    label: 'GET /ratex/health  (ping)',
+    method: 'GET',
+    url: ROUTES.HEALTH,
+    maxConcurrent: 20,
+    maxSequential: 200,
+  },
 ]

@@ -14,33 +14,52 @@ type SlidingWindow struct {
 	window time.Duration
 }
 
+// Lua script executes atomically: remove stale entries, count, then conditionally
+// add the new request ONLY if the count is within the limit.
+// Previously the pipeline always called ZAdd before checking, which meant blocked
+// requests were still recorded in the sorted set and inflated visualizer counts.
+var slidingWindowScript = redis.NewScript(`
+local key          = KEYS[1]
+local window_start = ARGV[1]
+local now_score    = ARGV[2]
+local limit        = tonumber(ARGV[3])
+local window_secs  = tonumber(ARGV[4])
+
+redis.call("ZREMRANGEBYSCORE", key, "0", window_start)
+local count = tonumber(redis.call("ZCARD", key))
+
+if count < limit then
+    redis.call("ZADD", key, now_score, now_score)
+    redis.call("EXPIRE", key, window_secs)
+    return {1, limit - count - 1}
+else
+    return {0, 0}
+end
+`)
+
 func NewSlidingWindow(client *redis.Client, limit int, window time.Duration) *SlidingWindow {
 	return &SlidingWindow{client: client, limit: limit, window: window}
 }
 
 func (sw *SlidingWindow) Allow(ctx context.Context, key string) (bool, int, error) {
 	now := time.Now()
-	windowStart := float64(now.Add(-sw.window).UnixNano()) / 1e9 // seconds as float
-	nowScore := float64(now.UnixNano()) / 1e9
+	windowStart := fmt.Sprintf("%f", float64(now.Add(-sw.window).UnixNano())/1e9)
+	nowScore := fmt.Sprintf("%f", float64(now.UnixNano())/1e9)
 	redisKey := fmt.Sprintf("sw:%s", key)
 
-	// Redis pipeline to excute multiple commands atomically
-	pipe := sw.client.Pipeline()
-	pipe.ZRemRangeByScore(ctx, redisKey, "0", fmt.Sprintf("%f", windowStart)) // Remove old entries
-	countCmd := pipe.ZCard(ctx, redisKey) // Get current count
-	pipe.ZAdd(ctx, redisKey, redis.Z{Score: nowScore, Member: nowScore}) // Add current request
-	pipe.Expire(ctx, redisKey, sw.window) // Set expiration for the key
+	result, err := slidingWindowScript.Run(
+		ctx,
+		sw.client,
+		[]string{redisKey},
+		windowStart,
+		nowScore,
+		sw.limit,
+		int(sw.window.Seconds()),
+	).Int64Slice()
 
-	_, err := pipe.Exec(ctx)
 	if err != nil {
 		return false, 0, err
 	}
 
-	count := countCmd.Val() // Since we added the current request, we check if count is within limit
-	remaining := sw.limit - int(count) - 1 // -1 for the current request
-	if remaining < 0 {
-		remaining = 0
-	}
-
-	return count < int64(sw.limit), remaining, nil
+	return result[0] == 1, int(result[1]), nil
 }

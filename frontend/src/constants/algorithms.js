@@ -34,3 +34,15 @@ export const ALGOS = {
 
 /** Default algorithm shown before the backend config is loaded. */
 export const DEFAULT_ALGO = ALGOS.SLIDING_WINDOW
+
+// ── Config parameter bounds (must mirror backend constants/errors.go) ─────────
+/**
+ * These are the only valid ranges the backend will accept.
+ * Keeping them here (not in ui.js) ensures every component that renders
+ * config inputs can import from a single authoritative source.
+ */
+export const CONFIG_BOUNDS = {
+  limit:      { min: 1,   max: 500  },
+  windowSecs: { min: 1,   max: 120  },
+  refillRate: { min: 0.1, max: 50   },
+}

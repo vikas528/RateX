@@ -14,6 +14,9 @@ const (
 	ErrRateLimiter       = "rate limiter error"
 	ErrRateLimitExceeded = "rate limit exceeded"
 	ErrInvalidAlgo       = "algo must be fixed_window, sliding_window, or token_bucket"
+	ErrLimitOutOfRange   = "limit must be between 1 and 500"
+	ErrWindowOutOfRange  = "window_seconds must be between 1 and 120"
+	ErrRefillRateRange   = "refill_rate must be between 0.1 and 50"
 )
 
 // Valid algorithm identifiers.
@@ -27,4 +30,16 @@ const (
 const (
 	DefaultLimit      = 10
 	DefaultWindowSecs = 60
+)
+
+// ── Config parameter bounds ───────────────────────────────────────────────────
+// These are enforced by HandleUpdateConfig and mirror the frontend input limits
+// in ConfigPanel so that the UI and API always agree on valid ranges.
+const (
+	MinLimit      = 1
+	MaxLimit      = 500
+	MinWindowSecs = 1
+	MaxWindowSecs = 120
+	MinRefillRate = 0.1
+	MaxRefillRate = 50.0
 )

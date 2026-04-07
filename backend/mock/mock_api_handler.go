@@ -140,11 +140,20 @@ func HandleUpdateConfig(resw http.ResponseWriter, req *http.Request, server *con
 		return
 	}
 
-	if reqBody.Limit <= 0 {
-		reqBody.Limit = constants.DefaultLimit
+	// ── Parameter validation against configured bounds ──────────────────────
+	if reqBody.Limit < constants.MinLimit || reqBody.Limit > constants.MaxLimit {
+		utils.JsonResponse(resw, http.StatusBadRequest, map[string]string{"error": constants.ErrLimitOutOfRange})
+		return
 	}
-	if reqBody.WindowSecs <= 0 {
-		reqBody.WindowSecs = constants.DefaultWindowSecs
+	if reqBody.WindowSecs < constants.MinWindowSecs || reqBody.WindowSecs > constants.MaxWindowSecs {
+		utils.JsonResponse(resw, http.StatusBadRequest, map[string]string{"error": constants.ErrWindowOutOfRange})
+		return
+	}
+	if reqBody.Algo == constants.AlgoTokenBucket {
+		if reqBody.RefillRate < constants.MinRefillRate || reqBody.RefillRate > constants.MaxRefillRate {
+			utils.JsonResponse(resw, http.StatusBadRequest, map[string]string{"error": constants.ErrRefillRateRange})
+			return
+		}
 	}
 
 	// Flush old Redis keys so the new config starts with a clean slate.

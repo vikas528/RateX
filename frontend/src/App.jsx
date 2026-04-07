@@ -46,6 +46,13 @@ export default function App() {
   // ── Selected endpoint (drives both the burst panel selector and runBurst) ─
   const [endpoint, setEndpoint] = useState(BURST_ENDPOINTS[0])
 
+  // Auto-clamp request count when the user switches to a lower-capped endpoint
+  const handleEndpointChange = (ep) => {
+    setEndpoint(ep)
+    const cap = burstHook.mode === 'concurrent' ? ep.maxConcurrent : ep.maxSequential
+    if (burstHook.numReqs > cap) burstHook.setNumReqs(cap)
+  }
+
   return (
     <div className="app">
 
@@ -66,6 +73,8 @@ export default function App() {
           refillRate={configHook.refillRate} setRefillRate={configHook.setRefillRate}
           isApplying={configHook.isApplying}
           configMsg={configHook.configMsg}
+          configStatus={configHook.configStatus}
+          isDirty={configHook.isDirty}
           onApply={configHook.applyConfig}
         />
 
@@ -76,19 +85,21 @@ export default function App() {
           delayMs={burstHook.delayMs}
           isBursting={burstHook.isBursting}
           progress={burstHook.progress}
+          minDelayRequired={burstHook.minDelayRequired}
+          effectiveDelay={burstHook.effectiveDelay}
           setMode={burstHook.setMode}
           setDelayMs={burstHook.setDelayMs}
           setNumReqs={burstHook.setNumReqs}
           handleNumReqsChange={burstHook.handleNumReqsChange}
           endpoint={endpoint}
-          setEndpoint={setEndpoint}
+          setEndpoint={handleEndpointChange}
           onRunBurst={() => burstHook.runBurst(endpoint)}
           onStopBurst={burstHook.stopBurst}
         />
       </div>
 
       {/* ── Live visualizer ── */}
-      <VisualizerCard activeConfig={configHook.activeConfig} />
+      <VisualizerCard activeConfig={configHook.activeConfig} isBursting={burstHook.isBursting} />
 
       {/* ── Burst results ── */}
       <ResultsPanel

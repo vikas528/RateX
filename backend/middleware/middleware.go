@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/vikas528/RateX/constants"
@@ -23,8 +24,10 @@ func RateLimit(getConfig func() (limiter.Limiter, time.Duration)) func(http.Hand
 			if err != nil {
 				ip = req.RemoteAddr
 			}
+			// Use the left-most (client) IP from a proxy chain, consistent with
+			// the approach used in visualizer.go.
 			if forwarded := req.Header.Get("X-Forwarded-For"); forwarded != "" {
-				ip = forwarded
+				ip = strings.TrimSpace(strings.Split(forwarded, ",")[0])
 			}
 
 			allowed, remaining, err := l.Allow(req.Context(), ip)

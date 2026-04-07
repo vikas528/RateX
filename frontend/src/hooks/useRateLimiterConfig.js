@@ -4,6 +4,11 @@
  * Fetches the active rate-limiter config from the backend on mount and exposes
  * state + an applyConfig callback.  Keeps all config-related network logic out
  * of the rendering components.
+ *
+ * Additions:
+ *  • configStatus — 'loading' | 'ready' | 'error'  (initial fetch state)
+ *  • isDirty      — true when the local form values differ from activeConfig
+ *                   (i.e. the user has edited fields but not applied yet)
  */
 import { useState, useEffect, useCallback } from 'react'
 import { apiUrl, ROUTES } from '../constants/api'
@@ -23,6 +28,7 @@ export function useRateLimiterConfig() {
   const [refillRate,   setRefillRate]   = useState(1.0)
   const [isApplying,   setIsApplying]   = useState(false)
   const [configMsg,    setConfigMsg]    = useState('')
+  const [configStatus, setConfigStatus] = useState('loading') // 'loading' | 'ready' | 'error'
 
   // ── Load config on mount ────────────────────────────────────────────────
   useEffect(() => {
@@ -34,9 +40,18 @@ export function useRateLimiterConfig() {
         setLimit(cfg.limit)
         setWindowSecs(cfg.window_seconds)
         setRefillRate(cfg.refill_rate ?? 1.0)
+        setConfigStatus('ready')
       })
-      .catch(() => {}) // silently ignore — backend may not be ready yet
+      .catch(() => setConfigStatus('error'))
   }, [])
+
+  // ── Derived: has the user changed any field without applying? ────────────
+  const isDirty = activeConfig !== null && (
+    algo         !== activeConfig.algo          ||
+    String(limit)       !== String(activeConfig.limit)        ||
+    String(windowSecs)  !== String(activeConfig.window_seconds) ||
+    String(refillRate)  !== String(activeConfig.refill_rate ?? 1.0)
+  )
 
   // ── Apply (POST) new config ─────────────────────────────────────────────
   const applyConfig = useCallback(async () => {
@@ -78,7 +93,10 @@ export function useRateLimiterConfig() {
     refillRate, setRefillRate,
     isApplying,
     configMsg,
+    configStatus,
+    isDirty,
     // actions
     applyConfig,
   }
 }
+

@@ -4,8 +4,7 @@
  * Top navigation bar — shows logo, tag-line, and the currently active
  * rate-limiter config fetched from the backend.
  */
-import { ALGO_LABELS } from '../../constants/algorithms'
-import { ALGOS } from '../../constants/algorithms'
+import { ALGO_LABELS, ALGOS } from '../../constants/algorithms'
 
 export default function Header({ activeConfig, theme, onToggleTheme }) {
   return (

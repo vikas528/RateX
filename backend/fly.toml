@@ -11,7 +11,7 @@ primary_region = "iad"             # US-East (cheapest / lowest latency to Upsta
   internal_port       = 8080
   force_https         = true
   auto_stop_machines  = "stop"     # spin down when idle — keeps free-tier usage at zero
-  auto_start_machines = true
+  auto_start_machines = false
   min_machines_running = 0
 
 [[vm]]

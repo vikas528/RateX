@@ -62,10 +62,65 @@
   border-radius: 20px;
 }
 
+/** Make a badge behave like a button (pass / block / err) */
+.badge--btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  border: none;
+  cursor: pointer;
+  transition: filter .13s, box-shadow .13s, opacity .13s;
+  line-height: 1;
+}
+
+.badge--btn:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 0 0 2px currentColor;
+}
+
+/** Active (currently filtering this group) */
+.badge--active {
+  box-shadow: 0 0 0 2px currentColor;
+  filter: brightness(1.1);
+}
+
+/** Small ✕ inside the active badge */
+.badge-clear {
+  font-size: .65rem;
+  opacity: .75;
+  margin-left: .1rem;
+}
+
 .badge--pass  { background: var(--status-pass-bg);   color: var(--status-pass-text);  }
 .badge--block { background: var(--status-block-bg);  color: var(--status-block-text); }
 .badge--err   { background: var(--status-orange-bg); color: var(--status-orange-text);}
 .badge--avg   { background: var(--status-avg-bg);    color: var(--status-avg-text);   }
+
+/** Filter active banner */
+.filter-notice {
+  margin: .35rem 0 .1rem;
+  padding: .35rem .75rem;
+  font-size: .78rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  color: var(--text-secondary);
+}
+
+.filter-notice-reset {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  font-weight: 600;
+  color: var(--brand);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.filter-notice-reset:hover {
+  opacity: .75;
+}
 
 
 /* ── Progress bar (pass rate) ─────────────────────────────────────────────── */
