@@ -17,6 +17,6 @@ func InitDefaultConfig() *AppConfig {
 		Algo:       utils.EnvOr("RATE_LIMITER_ALGO", "fixed_window"),
 		Limit:      utils.EnvIntOr("RATE_LIMITER_LIMIT", 100),
 		WindowSecs: utils.EnvIntOr("RATE_LIMITER_WINDOW_SECS", 60),
-		RefillRate: utils.EnvFloatOr("RATE_REFILL_RATE", 1.0),
+		RefillRate: utils.EnvFloatOr("RATE_LIMITER_REFILL_RATE", 1.0),
 	}
 }
