@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/vikas528/RateX/common"
@@ -19,14 +20,27 @@ func main() {
 
 	initConfig := config.InitDefaultConfig()
 
-	redisAddr := utils.EnvOr(constants.EnvRedisAddr, constants.DefaultRedisAddr)
-	redisClient := redis.NewClient(&redis.Options{Addr: redisAddr})
+	// Support both REDIS_URL (redis://host:port — injected by Render's managed Redis)
+	// and the legacy REDIS_ADDR (host:port) for local / Docker Compose setups.
+	var redisClient *redis.Client
+	if redisURL := os.Getenv("REDIS_URL"); redisURL != "" {
+		opt, err := redis.ParseURL(redisURL)
+		if err != nil {
+			log.Fatalf("Invalid REDIS_URL: %v", err)
+		}
+		redisClient = redis.NewClient(opt)
+		log.Printf("Redis: connecting via REDIS_URL")
+	} else {
+		redisAddr := utils.EnvOr(constants.EnvRedisAddr, constants.DefaultRedisAddr)
+		redisClient = redis.NewClient(&redis.Options{Addr: redisAddr})
+		log.Printf("Redis: connecting via REDIS_ADDR=%s", redisAddr)
+	}
 
 	limiter := common.BuildLimiter(redisClient, initConfig)
 	server := config.InitServer(initConfig, redisClient, limiter)
 
-	log.Printf("Starting: algo=%s limit=%d window=%ds redis=%s",
-		initConfig.Algo, initConfig.Limit, initConfig.WindowSecs, redisAddr)
+	log.Printf("Starting: algo=%s limit=%d window=%ds",
+		initConfig.Algo, initConfig.Limit, initConfig.WindowSecs)
 
 	rateLimiter := middleware.RateLimit(server.GetLimiterConfig)
 

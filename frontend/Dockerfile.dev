@@ -1,0 +1,20 @@
+# ── Frontend dev image (Vite hot-reload) ─────────────────────────────────────
+# Used by the "local" Docker Compose profile.
+# Source code is volume-mounted from the host so edits reflect immediately.
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install deps into the image (node_modules is NOT volume-mounted so the host
+# platform binaries don't clash with the container binaries).
+COPY package*.json ./
+RUN npm install
+
+# The project source is mounted at runtime via docker-compose volumes,
+# so we do NOT COPY src here.
+
+EXPOSE 5173
+
+# --host 0.0.0.0 is required so Vite listens on the container's network
+# interface and the mapped host port is reachable.
+CMD ["npm", "run", "dev"]

@@ -1,0 +1,30 @@
+# nginx.conf.template
+#
+# This file is processed by envsubst at container start (the nginx:alpine
+# entrypoint handles this automatically for files in /etc/nginx/templates/).
+#
+# Variables injected at runtime (via docker-compose environment:):
+#   NGINX_BACKEND_HOST  — Docker service name of the backend  (default: app)
+#   NGINX_BACKEND_PORT  — Port the backend listens on         (default: 8080)
+#
+# DO NOT put bare $ signs not meant to be replaced — escape them as $$
+# if you ever need a literal dollar sign in the nginx config.
+
+server {
+    listen 80;
+    root  /usr/share/nginx/html;
+    index index.html;
+
+    # ── Proxy all /ratex/* calls to the Go backend container ──────────────
+    location /ratex/ {
+        proxy_pass          http://${NGINX_BACKEND_HOST}:${NGINX_BACKEND_PORT};
+        proxy_set_header    Host              $host;
+        proxy_set_header    X-Real-IP         $remote_addr;
+        proxy_set_header    X-Forwarded-For   $proxy_add_x_forwarded_for;
+    }
+
+    # ── SPA fallback — every non-asset request returns index.html ─────────
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

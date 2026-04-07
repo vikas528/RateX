@@ -1,4 +1,20 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+#  RateX — Docker Compose
+#
+#  All runtime values come from the root .env file.
+#
+#  PROFILES
+#  ────────
+#  local       → ui-dev  (Vite dev server with hot-reload + volume-mounted src)
+#  production  → ui-prod (nginx serving the optimised production build)
+#
+#  Set COMPOSE_PROFILES in .env, then run:
+#    docker compose up --build
+# ═══════════════════════════════════════════════════════════════════════════════
+
 services:
+
+  # ── Redis ──────────────────────────────────────────────────────────────────
   redis:
     image: redis:alpine
     ports:
@@ -10,25 +26,52 @@ services:
       retries: 5
       start_period: 5s
 
+  # ── Go backend ─────────────────────────────────────────────────────────────
   app:
     build: ./backend
     ports:
-      - "8080:8080"
+      - "${BACKEND_PORT:-8080}:8080"
     environment:
-      - RATE_LIMITER_ALGO=sliding_window
-      - RATE_LIMITER_LIMIT=100
-      - RATE_LIMITER_WINDOW_SECS=60
-      - RATE_LIMITER_REFILL_RATE=1.0
-      - REDIS_ADDR=redis:6379
+      - REDIS_ADDR=${REDIS_ADDR:-redis:6379}
+      - RATE_LIMITER_ALGO=${RATE_LIMITER_ALGO:-sliding_window}
+      - RATE_LIMITER_LIMIT=${RATE_LIMITER_LIMIT:-100}
+      - RATE_LIMITER_WINDOW_SECS=${RATE_LIMITER_WINDOW_SECS:-60}
+      - RATE_LIMITER_REFILL_RATE=${RATE_LIMITER_REFILL_RATE:-1.0}
     depends_on:
       redis:
         condition: service_healthy
     restart: on-failure
-  
-  ui:
-    build: ./frontend
+
+  # ── UI: LOCAL dev (Vite hot-reload, source volume-mounted) ─────────────────
+  # Activated when:  COMPOSE_PROFILES=local
+  ui-dev:
+    profiles: ["local"]
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
     ports:
-      - "3000:80"
+      - "${FRONTEND_DEV_PORT:-5173}:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules          # keep container node_modules isolated
+    environment:
+      - VITE_API_TARGET=${VITE_API_TARGET:-http://app:8080}
+    depends_on:
+      - app
+    restart: on-failure
+
+  # ── UI: PRODUCTION (nginx, optimised static build) ─────────────────────────
+  # Activated when:  COMPOSE_PROFILES=production
+  ui-prod:
+    profiles: ["production"]
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "${FRONTEND_PROD_PORT:-3000}:80"
+    environment:
+      - NGINX_BACKEND_HOST=${NGINX_BACKEND_HOST:-app}
+      - NGINX_BACKEND_PORT=${NGINX_BACKEND_PORT:-8080}
     depends_on:
       - app
     restart: on-failure
