@@ -21,6 +21,7 @@ services:
   - type: web
     name: ratex-backend
     env: docker
+    plan: free
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     healthCheckPath: /ratex/health
