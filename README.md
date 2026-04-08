@@ -12,7 +12,8 @@
 
 | Environment | URL |
 |-------------|-----|
-| 🌐 Live | https://vikas528.github.io/RateX/ |
+| 🌐 Frontend (GitHub Pages) | https://vikas528.github.io/RateX/ |
+| 🔌 Backend API (Render) | https://ratex-backend.onrender.com |
 | 🐳 Local Docker | `http://localhost:5173` (dev) · `http://localhost:3000` (prod) |
 
 ---
@@ -438,11 +439,11 @@ This repo ships two GitHub Actions workflows that deploy automatically on every 
 flowchart LR
     Dev["👨‍💻 Push to main"] --> GHA["GitHub Actions"]
     GHA --> FE["deploy-frontend.yml\nBuild Vite → GitHub Pages"]
-    GHA --> BE["deploy-backend.yml\nflyctl deploy --remote-only"]
+    GHA --> BE["deploy-backend.yml\nTrigger Render deploy hook"]
     FE --> GHP["🌐 GitHub Pages\nvikas528.github.io/RateX/"]
-    BE --> FLY["✈️ Fly.io\nGo backend (free tier)"]
-    FLY -. "REDIS_URL" .-> UPS["🗄 Upstash\nManaged Redis (free)"]
-    GHP -. "VITE_API_BASE_URL" .-> FLY
+    BE --> RND["☁️ Render\nGo backend + Redis"]
+    RND -. "REDIS_URL" .-> UPS["🗄 Upstash\nManaged Redis (free)"]
+    GHP -. "VITE_API_BASE_URL" .-> RND
 ```
 
 ### Step-by-step setup guide

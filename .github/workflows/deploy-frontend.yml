@@ -6,8 +6,8 @@
 #
 #  Required GitHub variable  (Settings → Secrets and variables → Actions →
 #  Variables tab  OR  Environments → github-pages → Variables):
-#    VITE_API_BASE_URL   The public Fly.io backend URL, e.g.
-#                        https://ratex-backend.fly.dev
+#    VITE_API_BASE_URL   The public Render backend URL, e.g.
+#                        https://ratex-backend.onrender.com
 #                        Leave empty to use relative paths (API must be on same origin).
 #
 #  To enable GitHub Pages:
@@ -60,7 +60,7 @@ jobs:
           # Change if you use a custom domain (set to /)
           VITE_BASE_PATH: /RateX/
           # Backend URL — read from the github-pages environment variable
-          # Set it at: Settings → Environments → github-pages → Variables → VITE_API_BASE_URL = https://ratex-backend.fly.dev
+          # Set it at: Settings → Environments → github-pages → Variables → VITE_API_BASE_URL = https://ratex-backend.onrender.com
           VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
         run: npm run build
 
