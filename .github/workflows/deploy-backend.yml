@@ -11,6 +11,10 @@
 #                             Render dashboard → ratex-backend → Settings →
 #                             "Deploy Hook" → copy the full URL.
 #
+#  Optional GitHub repository variable:
+#    RENDER_BACKEND_URL       Public backend base URL (default:
+#                             https://ratex-backend.onrender.com)
+#
 #  NOTE: Only changes under backend/ and render.yaml trigger this job.
 #        Pure frontend changes skip the backend deploy automatically.
 # =============================================================================
@@ -27,17 +31,55 @@ on:
 
 jobs:
   deploy:
-    name: Trigger Render deploy
+    name: Trigger + verify Render deploy
     runs-on: ubuntu-latest
+    env:
+      RENDER_BACKEND_URL: ${{ vars.RENDER_BACKEND_URL || 'https://ratex-backend.onrender.com' }}
 
     steps:
+      - name: Validate required secrets
+        run: |
+          if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" ]; then
+            echo "::error::Missing required secret: RENDER_DEPLOY_HOOK_URL"
+            exit 1
+          fi
+
       - name: Trigger Render deploy hook
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+          RESPONSE_FILE="$(mktemp)"
+          STATUS=$(curl -sS -o "$RESPONSE_FILE" -w "%{http_code}" \
             -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}")
-          echo "Render response: $STATUS"
+
+          echo "Render hook response HTTP: $STATUS"
           if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then
+            echo "Response body:"
+            cat "$RESPONSE_FILE"
             echo "::error::Render deploy hook failed with HTTP $STATUS"
             exit 1
           fi
-          echo "::notice::Render deploy triggered successfully (HTTP $STATUS)"
+
+          echo "::notice::Render deploy hook accepted (HTTP $STATUS)"
+
+      - name: Wait for backend health endpoint
+        run: |
+          HEALTH_URL="${RENDER_BACKEND_URL%/}/ratex/health"
+          MAX_ATTEMPTS=40
+          SLEEP_SECS=15
+
+          echo "Polling health endpoint: $HEALTH_URL"
+          echo "Max wait: $((MAX_ATTEMPTS * SLEEP_SECS)) seconds"
+
+          for attempt in $(seq 1 $MAX_ATTEMPTS); do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$HEALTH_URL" || true)
+
+            if [ "$HTTP_CODE" -eq 200 ]; then
+              echo "::notice::Backend is healthy after deploy (attempt $attempt/$MAX_ATTEMPTS)."
+              exit 0
+            fi
+
+            echo "Attempt $attempt/$MAX_ATTEMPTS: health check returned HTTP $HTTP_CODE"
+            sleep "$SLEEP_SECS"
+          done
+
+          echo "::error::Backend did not become healthy in time at $HEALTH_URL"
+          exit 1

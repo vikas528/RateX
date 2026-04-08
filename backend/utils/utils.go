@@ -9,16 +9,15 @@ import (
 	"strings"
 )
 
-
 func EnvOr(key, defaultValue string) string {
-	if v:= os.Getenv(key); v != "" {
+	if v := os.Getenv(key); v != "" {
 		return v
 	}
 	return defaultValue
 }
 
 func EnvIntOr(key string, defaultValue int) int {
-	if v:= os.Getenv(key); v != "" {
+	if v := os.Getenv(key); v != "" {
 		if n, err := strconv.Atoi(v); err == nil {
 			return n
 		}
@@ -27,7 +26,7 @@ func EnvIntOr(key string, defaultValue int) int {
 }
 
 func EnvFloatOr(key string, defaultValue float64) float64 {
-	if v:= os.Getenv(key); v != "" {
+	if v := os.Getenv(key); v != "" {
 		if f, err := strconv.ParseFloat(v, 64); err == nil && f > 0 {
 			return f
 		}
