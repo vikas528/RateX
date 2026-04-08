@@ -1,22 +1,42 @@
 import { useState, useEffect, useRef } from 'react'
 
-const POLL_MS = 350
+const POLL_MS_MIN = 350
+const POLL_MS_MAX = 30_000
 
 export default function Visualizer({ activeConfig }) {
   const [state, setState] = useState(null)
-  const timerRef = useRef(null)
+  const timeoutRef = useRef(null)
 
   useEffect(() => {
     setState(null)
-    const poll = () =>
+    let delay = POLL_MS_MIN
+    let cancelled = false
+
+    const poll = () => {
       fetch('/api/visualizer-state')
-        .then(r => r.json())
-        .then(setState)
-        .catch(() => {})
+        .then(r => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`)
+          return r.json()
+        })
+        .then(data => {
+          if (cancelled) return
+          setState(data)
+          delay = POLL_MS_MIN          // success — reset to fast poll
+        })
+        .catch(() => {
+          if (cancelled) return
+          delay = Math.min(delay * 2, POLL_MS_MAX) // error — back off exponentially
+        })
+        .finally(() => {
+          if (!cancelled) timeoutRef.current = setTimeout(poll, delay)
+        })
+    }
 
     poll()
-    timerRef.current = setInterval(poll, POLL_MS)
-    return () => clearInterval(timerRef.current)
+    return () => {
+      cancelled = true
+      clearTimeout(timeoutRef.current)
+    }
   }, [
     activeConfig?.algo,
     activeConfig?.limit,

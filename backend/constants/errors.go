@@ -13,6 +13,7 @@ const (
 	ErrProductIDRequired = "product_id is required"
 	ErrRateLimiter       = "rate limiter error"
 	ErrRateLimitExceeded = "rate limit exceeded"
+	ErrNotFound          = "not found"
 	ErrInvalidAlgo       = "algo must be fixed_window, sliding_window, or token_bucket"
 	ErrLimitOutOfRange   = "limit must be between 1 and 500"
 	ErrWindowOutOfRange  = "window_seconds must be between 1 and 120"

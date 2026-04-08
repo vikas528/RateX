@@ -43,3 +43,5 @@ services:
         value: 60
       - key: RATE_LIMITER_REFILL_RATE
         value: 1.0
+      - key: CORS_ALLOWED_ORIGIN
+        value: https://vikas528.github.io   # lock CORS to the GitHub Pages frontend

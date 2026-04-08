@@ -37,6 +37,7 @@ services:
       - RATE_LIMITER_LIMIT=${RATE_LIMITER_LIMIT:-100}
       - RATE_LIMITER_WINDOW_SECS=${RATE_LIMITER_WINDOW_SECS:-60}
       - RATE_LIMITER_REFILL_RATE=${RATE_LIMITER_REFILL_RATE:-1.0}
+      - CORS_ALLOWED_ORIGIN=${CORS_ALLOWED_ORIGIN:-*}
     depends_on:
       redis:
         condition: service_healthy

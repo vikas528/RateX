@@ -25,6 +25,10 @@ func HandleMockHealthCheck(resw http.ResponseWriter, req *http.Request) {
 
 // HandleListProducts returns all products, or filtered by the optional "category" query param.
 func HandleListProducts(resw http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet {
+		utils.JsonResponse(resw, http.StatusMethodNotAllowed, map[string]string{"error": constants.ErrMethodNotAllowed})
+		return
+	}
 	category := req.URL.Query().Get("category")
 
 	var filtered []Product
@@ -39,6 +43,10 @@ func HandleListProducts(resw http.ResponseWriter, req *http.Request) {
 
 // HandleGetProduct returns a single product by ID from the URL path.
 func HandleGetProduct(resw http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet {
+		utils.JsonResponse(resw, http.StatusMethodNotAllowed, map[string]string{"error": constants.ErrMethodNotAllowed})
+		return
+	}
 	idStr := strings.TrimPrefix(req.URL.Path, constants.PathPrefixProducts)
 	id, err := strconv.Atoi(idStr)
 	if err != nil || idStr == "" {
@@ -95,6 +103,10 @@ func HandleCreateOrder(resw http.ResponseWriter, req *http.Request) {
 
 // HandleGetMe returns the mock authenticated user.
 func HandleGetMe(resw http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet {
+		utils.JsonResponse(resw, http.StatusMethodNotAllowed, map[string]string{"error": constants.ErrMethodNotAllowed})
+		return
+	}
 	utils.JsonResponse(resw, http.StatusOK, currentUser)
 }
 

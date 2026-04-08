@@ -2,7 +2,7 @@
 #  deploy-frontend.yml
 #
 #  Builds the React + Vite frontend and publishes it to GitHub Pages.
-#  Triggered on every push (merge) to the `main` branch.
+#  Triggered on every push to the `render` branch.
 #
 #  Required GitHub variable  (Settings → Secrets and variables → Actions →
 #  Variables tab  OR  Environments → github-pages → Variables):
@@ -18,7 +18,7 @@ name: Deploy Frontend → GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [render]
   workflow_dispatch:      # allow manual trigger from the Actions tab
 
 # Allow the workflow to write to the gh-pages deployment

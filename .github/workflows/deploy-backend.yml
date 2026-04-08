@@ -1,8 +1,9 @@
 # =============================================================================
 #  deploy-backend.yml
 #
-#  Triggers a Render redeploy of the backend service whenever code is merged
-#  to `main`.  Render rebuilds the Docker image and rolls out the new version.
+#  Triggers a Render redeploy of the backend service whenever code is pushed
+#  to the `render` branch.  Render rebuilds the Docker image and rolls out the
+#  new version.
 #
 #  Required GitHub repository secret  (Settings → Secrets and variables →
 #  Actions → Secrets tab):
@@ -18,7 +19,7 @@ name: Deploy Backend → Render
 
 on:
   push:
-    branches: [main]
+    branches: [render]
     paths:
       - backend/**
       - render.yaml
