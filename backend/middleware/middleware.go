@@ -49,3 +49,25 @@ func RateLimit(getConfig func() (limiter.Limiter, time.Duration)) func(http.Hand
 		})
 	}
 }
+
+// RateLimitAll wraps an entire mux with rate limiting, skipping any path
+// listed in excluded (exact match).  Register it as the outermost middleware
+// so that every new route is automatically rate-limited unless explicitly opted out.
+func RateLimitAll(getConfig func() (limiter.Limiter, time.Duration), excluded []string) func(http.Handler) http.Handler {
+	excludedSet := make(map[string]struct{}, len(excluded))
+	for _, p := range excluded {
+		excludedSet[p] = struct{}{}
+	}
+
+	innerRL := RateLimit(getConfig)
+	return func(next http.Handler) http.Handler {
+		limited := innerRL(next)
+		return http.HandlerFunc(func(resw http.ResponseWriter, req *http.Request) {
+			if _, skip := excludedSet[req.URL.Path]; skip {
+				next.ServeHTTP(resw, req)
+				return
+			}
+			limited.ServeHTTP(resw, req)
+		})
+	}
+}

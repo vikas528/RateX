@@ -39,7 +39,7 @@ func main() {
 
 	// Verify Redis is reachable before accepting traffic. A failed Ping here
 	// causes the process to exit with a clear log message, which surfaces
-	// immediately in `fly logs` instead of silently returning 500s.
+	// immediately in Render logs instead of silently returning 500s.
 	if err := redisClient.Ping(context.Background()).Err(); err != nil {
 		log.Fatalf("Redis ping failed — check REDIS_URL / REDIS_ADDR: %v", err)
 	}
@@ -51,11 +51,10 @@ func main() {
 	log.Printf("Starting: algo=%s limit=%d window=%ds",
 		initConfig.Algo, initConfig.Limit, initConfig.WindowSecs)
 
-	rateLimiter := middleware.RateLimit(server.GetLimiterConfig)
-
 	mux := http.NewServeMux()
 
-	// ── Non-rate-limited endpoints ───────────────────────────────────────────
+	// ── All routes — rate-limited by default ─────────────────────────────────
+	// Exceptions are declared in config.ExcludedFromRateLimit.
 	mux.HandleFunc(constants.RouteHealth, mock.HandleMockHealthCheck)
 
 	mux.HandleFunc(constants.RouteVisualizerState, func(resw http.ResponseWriter, req *http.Request) {
@@ -77,15 +76,18 @@ func main() {
 		}
 	})
 
-	// ── Rate-limited endpoints ───────────────────────────────────────────────
-	mux.Handle(constants.RouteProducts, rateLimiter(http.HandlerFunc(mock.HandleListProducts)))
-	mux.Handle(constants.RouteProductByID, rateLimiter(http.HandlerFunc(mock.HandleGetProduct)))
-	mux.Handle(constants.RouteOrders, rateLimiter(http.HandlerFunc(mock.HandleCreateOrder)))
-	mux.Handle(constants.RouteUsersMe, rateLimiter(http.HandlerFunc(mock.HandleGetMe)))
+	mux.HandleFunc(constants.RouteProducts, mock.HandleListProducts)
+	mux.HandleFunc(constants.RouteProductByID, mock.HandleGetProduct)
+	mux.HandleFunc(constants.RouteOrders, mock.HandleCreateOrder)
+	mux.HandleFunc(constants.RouteUsersMe, mock.HandleGetMe)
 
 	mux.HandleFunc(constants.RouteRoot, func(resw http.ResponseWriter, req *http.Request) {
 		mock.HandleRoot(resw, req, server)
 	})
 
-	log.Fatal(http.ListenAndServe(constants.ServerListenAddr, middleware.CorsMiddleware(mux)))
+	// Wrap the whole mux: every route is rate-limited unless its path is in
+	// config.ExcludedFromRateLimit.  Add new rate-limited routes to the mux above;
+	// add management/utility routes to ExcludedFromRateLimit to skip limiting.
+	handler := middleware.RateLimitAll(server.GetLimiterConfig, config.ExcludedFromRateLimit)(mux)
+	log.Fatal(http.ListenAndServe(constants.ServerListenAddr, middleware.CorsMiddleware(handler)))
 }
