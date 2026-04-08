@@ -27,11 +27,11 @@ on:
     paths:
       - backend/**
       - render.yaml
-  workflow_dispatch:    # allow manual trigger
+  workflow_dispatch:
 
 jobs:
   deploy:
-    name: Trigger + verify Render deploy
+    name: Trigger Render Deploy
     runs-on: ubuntu-latest
     env:
       RENDER_BACKEND_URL: ${{ vars.RENDER_BACKEND_URL || 'https://ratex-backend.onrender.com' }}

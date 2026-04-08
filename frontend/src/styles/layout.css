@@ -22,9 +22,9 @@ body {
 
 /* ── App wrapper ──────────────────────────────────────────────────────────── */
 .app {
-  max-width: 1100px;
+  width: min(1100px, 100%);
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: clamp(.75rem, 2vw, 1.5rem);
 }
 
 
@@ -125,10 +125,11 @@ body {
 
 /* ── Card shell ───────────────────────────────────────────────────────────── */
 .card {
-  padding: 1.5rem;
+  padding: clamp(1rem, 2.4vw, 1.5rem);
   background: var(--bg-card);
   border: 1px solid var(--border-default);
   border-radius: 12px;
+  overflow: hidden;
 }
 
 .card-title {
@@ -138,4 +139,44 @@ body {
   margin-bottom: 1.25rem;
   padding-bottom: .6rem;
   border-bottom: 1px solid var(--border-default);
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 1rem;
+  }
+
+  .header-active {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .theme-toggle-btn {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 520px) {
+  .app {
+    padding: .75rem;
+  }
+
+  .header {
+    gap: .75rem;
+    margin-bottom: 1rem;
+  }
+
+  .logo-text {
+    font-size: 1.2rem;
+  }
+
+  .header-tag {
+    font-size: .7rem;
+    padding: .2rem .6rem;
+  }
+
+  .card-title {
+    margin-bottom: 1rem;
+  }
 }

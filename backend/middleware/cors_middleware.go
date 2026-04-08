@@ -15,6 +15,7 @@ func CorsMiddleware(next http.Handler) http.Handler {
 		resw.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
 		resw.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		resw.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		resw.Header().Set("Access-Control-Expose-Headers", "X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After")
 		if req.Method == http.MethodOptions {
 			resw.WriteHeader(http.StatusNoContent)
 			return

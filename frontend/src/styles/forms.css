@@ -395,9 +395,24 @@ select.input {
     grid-template-columns: 1fr;
   }
 
+  .field-cap-hint {
+    display: block;
+    margin-top: .18rem;
+    margin-left: 0;
+  }
+
   /* Algo buttons: let each button be at least 72px wide and fill available space */
   .algo-grid {
     grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  }
+
+  .mode-group {
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+
+  .mode-btn {
+    min-width: 0;
   }
 
   /* Allow the fire/stop button row to wrap if needed */

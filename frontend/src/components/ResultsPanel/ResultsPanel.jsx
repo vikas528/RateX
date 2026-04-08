@@ -139,23 +139,32 @@ export default function ResultsPanel({ results, onClear }) {
           <tbody>
             {displayed.map(r => {
               const ok = r.status === HTTP_OK || r.status === HTTP_CREATED
-              const resetStr = r.reset
-                ? new Date(r.reset * 1000).toLocaleTimeString()
+              const hasReset = r.reset !== null && r.reset !== undefined && r.reset !== ''
+              const resetTs = hasReset ? Number(r.reset) : NaN
+              const resetStr = Number.isFinite(resetTs) && resetTs > 0
+                ? new Date(resetTs * 1000).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                  })
+                : '—'
+              const remainingStr = r.remaining !== null && r.remaining !== undefined && r.remaining !== ''
+                ? r.remaining
                 : '—'
               const rowClass = ok ? 'row--pass' : r.status === HTTP_429 ? 'row--block' : 'row--err'
               const pillClass = ok ? 'pill--ok' : r.status === HTTP_429 ? 'pill--429' : 'pill--err'
 
               return (
                 <tr key={r.n} className={rowClass}>
-                  <td className="cell-n">{r.n}</td>
-                  <td>
+                  <td className="cell-n" data-label="#">{r.n}</td>
+                  <td className="cell-status" data-label="Status">
                     <span className={`status-pill ${pillClass}`}>
                       {ok ? '✓' : '✗'} {r.status}
                     </span>
                   </td>
-                  <td>{r.remaining ?? '—'}</td>
-                  <td className="cell-reset">{resetStr}</td>
-                  <td className="cell-ms">{r.ms}ms</td>
+                  <td data-label="Remaining">{remainingStr}</td>
+                  <td className="cell-reset" data-label="Reset">{resetStr}</td>
+                  <td className="cell-ms" data-label="Latency">{r.ms}ms</td>
                 </tr>
               )
             })}
