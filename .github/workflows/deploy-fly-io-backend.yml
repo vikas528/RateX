@@ -1,0 +1,41 @@
+# =============================================================================
+#  deploy-backend.yml
+#
+#  Deploys the Go backend to Fly.io on every push to main that touches
+#  backend/ code.  Fly.io rebuilds the Docker image and rolls it out.
+#
+#  Free tier: 3 shared-cpu-1x 256 MB VMs free. The app is configured with
+#  auto_stop_machines so it costs $0 when idle.
+#  Note: Fly.io requires a CC on file for identity verification, but the
+#  free tier is not charged for small apps like this.
+#
+#  Required GitHub repository secret  (Settings → Secrets → Actions):
+#    FLY_API_TOKEN   fly tokens create deploy -x 999999h
+# =============================================================================
+
+name: Deploy Backend → Fly.io
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - backend/**
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Fly.io
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy
+        working-directory: backend
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl deploy --remote-only

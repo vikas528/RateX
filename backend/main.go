@@ -42,7 +42,7 @@ func main() {
 
 	// Verify Redis is reachable before accepting traffic. A failed Ping here
 	// causes the process to exit with a clear log message, which surfaces
-	// immediately in Render logs instead of silently returning 500s.
+	// immediately in Render/fly.io logs instead of silently returning 500s.
 	if err := redisClient.Ping(context.Background()).Err(); err != nil {
 		log.Fatalf("Redis ping failed — check REDIS_URL / REDIS_ADDR: %v", err)
 	}

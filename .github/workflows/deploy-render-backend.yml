@@ -23,7 +23,7 @@ name: Deploy Backend → Render
 
 on:
   push:
-    branches: [render]
+    branches: [main]
     paths:
       - backend/**
       - render.yaml
