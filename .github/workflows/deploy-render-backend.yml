@@ -1,0 +1,50 @@
+# =============================================================================
+#  deploy-backend.yml
+#
+#  Triggers a Render redeploy of the backend service whenever code is pushed
+#  to the `render` branch.  Render rebuilds the Docker image and rolls out the
+#  new version.
+#
+#  Required GitHub repository secret  (Settings → Secrets and variables →
+#  Actions → Secrets tab):
+#    RENDER_DEPLOY_HOOK_URL   The deploy-hook URL from your Render service.
+#                             Render dashboard → ratex-backend → Settings →
+#                             "Deploy Hook" → copy the full URL.
+#
+#  Optional GitHub repository variable:
+#    RENDER_BACKEND_URL       Public backend base URL (default:
+#                             https://ratex-backend.onrender.com)
+#
+#  NOTE: Only changes under backend/ and render.yaml trigger this job.
+#        Pure frontend changes skip the backend deploy automatically.
+# =============================================================================
+
+name: Deploy Backend → Render
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - backend/**
+      - render.yaml
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Trigger Render Deploy
+    runs-on: ubuntu-latest
+    env:
+      RENDER_BACKEND_URL: ${{ vars.RENDER_BACKEND_URL || 'https://ratex-backend.onrender.com' }}
+
+    steps:
+      - name: Validate required secrets
+        run: |
+          if [ -z "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" ]; then
+            echo "::error::Missing required secret: RENDER_DEPLOY_HOOK_URL"
+            exit 1
+          fi
+      - uses: bankfliptech/deploy-to-render@v1
+        with:
+          serviceId: ${{ secrets.RENDER_SERVICE_ID }}
+          apiKey: ${{ secrets.RENDER_API_KEY }}
+          deployHookURL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}

@@ -7,6 +7,7 @@
 /* ── Visualizer card wrapper ──────────────────────────────────────────────── */
 .viz-card {
   margin-bottom: 1.25rem;
+  overflow: hidden;
 }
 
 .viz-header {
@@ -74,6 +75,7 @@
   background: var(--bg-input);
   border: 1px solid var(--border-default);
   border-radius: 8px;
+  min-width: 0;
 }
 
 .viz-stat-label {
@@ -111,6 +113,7 @@
   background: var(--bg-input);
   border: 1px solid var(--border-default);
   border-radius: 8px;
+  min-width: 0;
 }
 
 .viz-bar-hdr {
@@ -379,6 +382,60 @@
   color: var(--text-faint);
 }
 
+@media (max-width: 768px) {
+  .viz-header {
+    flex-wrap: wrap;
+    gap: .75rem;
+    margin-bottom: 1rem;
+  }
+
+  .viz-tb-wrap,
+  .viz-fw-wrap {
+    gap: 1rem;
+  }
+
+  .viz-stats-grid,
+  .viz-stats-grid--2col {
+    grid-template-columns: 1fr;
+  }
+
+  .viz-stats-grid--row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .viz-tb-wrap .viz-stats-grid,
+  .viz-fw-right {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .viz-sw-header {
+    align-items: stretch;
+  }
+
+  .viz-sw-count {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: end;
+    gap: .15rem .45rem;
+  }
+
+  .viz-sw-count > :last-child {
+    grid-column: 1 / -1;
+  }
+
+  .viz-sw-timeline-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .viz-sw-svg {
+    min-width: 560px;
+  }
+}
+
 
 /* ── Mobile responsiveness ────────────────────────────────────────────────── */
 @media (max-width: 520px) {
@@ -393,6 +450,11 @@
   .viz-tb-wrap {
     gap: 1.25rem;
     justify-content: center;
+  }
+
+  .viz-tb-bucket {
+    width: 80px;
+    height: 172px;
   }
 
   /* Fixed Window: the ring legend has white-space:nowrap so .viz-fw-left can
@@ -421,8 +483,16 @@
   }
 
   .viz-fw-svg {
-    width: 120px;
-    height: 120px;
+    width: 112px;
+    height: 112px;
+  }
+
+  .viz-stats-grid--row {
+    grid-template-columns: 1fr;
+  }
+
+  .viz-sw-svg {
+    min-width: 480px;
   }
 
   /* Header spacing */

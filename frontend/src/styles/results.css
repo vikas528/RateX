@@ -150,13 +150,16 @@
 
 /* ── Results table ────────────────────────────────────────────────────────── */
 .results-table-wrap {
+  width: 100%;
   overflow-x: auto;
 }
 
 .results-table {
   width: 100%;
+  min-width: 620px;
   font-size: .84rem;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .results-table th {
@@ -170,6 +173,10 @@
   border-bottom: 1px solid var(--border-default);
 }
 
+.results-table th:last-child {
+  text-align: right;
+}
+
 .results-table td {
   padding: .45rem .75rem;
   border-bottom: 1px solid var(--table-row-border);
@@ -181,6 +188,7 @@
 
 /* Cell-specific styles */
 .cell-n     { width: 2.5rem; font-size: .78rem; color: var(--text-dim); }
+.cell-status { min-width: 0; }
 .cell-reset { font-size: .78rem; color: var(--text-dim); }
 .cell-ms    { text-align: right; color: var(--text-label); }
 
@@ -220,6 +228,21 @@
   /* Let the badge row wrap under the title/clear button on narrow screens */
   .results-header {
     flex-wrap: wrap;
+    gap: .75rem;
+  }
+
+  .results-summary {
+    width: 100%;
+  }
+
+  .prog-bar-wrap {
+    order: 10;
+    width: 100%;
+  }
+
+  .prog-label {
+    min-width: 0;
+    text-align: left;
   }
 
   /* Tighten table cell padding so the table needs less width before scrolling */
@@ -231,5 +254,63 @@
   /* Let the progress bar shrink further on very small containers */
   .prog-bar-wrap {
     min-width: 36px;
+  }
+}
+
+@media (max-width: 640px) {
+  .results-table {
+    min-width: 0;
+    table-layout: auto;
+  }
+
+  .results-table thead {
+    display: none;
+  }
+
+  .results-table,
+  .results-table tbody,
+  .results-table tr,
+  .results-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .results-table tr {
+    padding: .65rem .75rem;
+    border-bottom: 1px solid var(--table-row-border);
+  }
+
+  .results-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .28rem 0;
+    border-bottom: none;
+  }
+
+  .results-table td::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .results-table .cell-n,
+  .results-table .cell-reset,
+  .results-table .cell-ms {
+    width: 100%;
+    font-size: .82rem;
+  }
+
+  .results-table .cell-status {
+    align-items: flex-start;
+  }
+
+  .results-table .cell-ms {
+    text-align: left;
   }
 }

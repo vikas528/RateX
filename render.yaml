@@ -21,6 +21,7 @@ services:
   - type: web
     name: ratex-backend
     env: docker
+    plan: free
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     healthCheckPath: /ratex/health
@@ -28,8 +29,12 @@ services:
     envVars:
       # Paste your Upstash Redis URL here (rediss://default:<pwd>@<host>:<port>)
       # Get it free at https://console.upstash.com — no credit card required.
+      #
+      # SECRET: sync: false means this value is NEVER stored in this YAML or git.
+      # Render will prompt you to enter it securely in the dashboard on first deploy,
+      # and it is stored encrypted in Render's secret store.
       - key: REDIS_URL
-        sync: false     # "sync: false" = Render will prompt you to enter this manually
+        sync: false
       - key: RATE_LIMITER_ALGO
         value: sliding_window   # fixed_window | sliding_window | token_bucket
       - key: RATE_LIMITER_LIMIT
@@ -38,3 +43,5 @@ services:
         value: 60
       - key: RATE_LIMITER_REFILL_RATE
         value: 1.0
+      - key: CORS_ALLOWED_ORIGIN
+        value: https://vikas528.github.io   # lock CORS to the GitHub Pages frontend

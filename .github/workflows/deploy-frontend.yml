@@ -2,12 +2,12 @@
 #  deploy-frontend.yml
 #
 #  Builds the React + Vite frontend and publishes it to GitHub Pages.
-#  Triggered on every push (merge) to the `main` branch.
+#  Triggered on every push to the `main` branch.
 #
 #  Required GitHub variable  (Settings → Secrets and variables → Actions →
 #  Variables tab  OR  Environments → github-pages → Variables):
-#    VITE_API_BASE_URL   The public Fly.io backend URL, e.g.
-#                        https://ratex-backend.fly.dev
+#    VITE_API_BASE_URL   The public Render/fly.io backend URL, e.g.
+#                        https://ratex-backend.onrender.com or https://ratex-backend.fly.dev
 #                        Leave empty to use relative paths (API must be on same origin).
 #
 #  To enable GitHub Pages:
@@ -60,7 +60,7 @@ jobs:
           # Change if you use a custom domain (set to /)
           VITE_BASE_PATH: /RateX/
           # Backend URL — read from the github-pages environment variable
-          # Set it at: Settings → Environments → github-pages → Variables → VITE_API_BASE_URL = https://ratex-backend.fly.dev
+          # Set it at: Settings → Environments → github-pages → Variables → VITE_API_BASE_URL = https://ratex-backend.onrender.com or https://ratex-backend.fly.dev
           VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
         run: npm run build
 

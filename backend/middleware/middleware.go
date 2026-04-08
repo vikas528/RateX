@@ -2,14 +2,13 @@ package middleware
 
 import (
 	"fmt"
-	"net"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/vikas528/RateX/constants"
 	"github.com/vikas528/RateX/limiter"
+	"github.com/vikas528/RateX/utils"
 )
 
 // RateLimit returns a middleware that applies the Limiter returned by getConfig.
@@ -20,15 +19,7 @@ func RateLimit(getConfig func() (limiter.Limiter, time.Duration)) func(http.Hand
 		return http.HandlerFunc(func(resw http.ResponseWriter, req *http.Request) {
 			l, window := getConfig()
 
-			ip, _, err := net.SplitHostPort(req.RemoteAddr)
-			if err != nil {
-				ip = req.RemoteAddr
-			}
-			// Use the left-most (client) IP from a proxy chain, consistent with
-			// the approach used in visualizer.go.
-			if forwarded := req.Header.Get("X-Forwarded-For"); forwarded != "" {
-				ip = strings.TrimSpace(strings.Split(forwarded, ",")[0])
-			}
+			ip := utils.ClientIP(req)
 
 			allowed, remaining, err := l.Allow(req.Context(), ip)
 			if err != nil {
@@ -46,6 +37,28 @@ func RateLimit(getConfig func() (limiter.Limiter, time.Duration)) func(http.Hand
 			}
 
 			next.ServeHTTP(resw, req)
+		})
+	}
+}
+
+// RateLimitAll wraps an entire mux with rate limiting, skipping any path
+// listed in excluded (exact match).  Register it as the outermost middleware
+// so that every new route is automatically rate-limited unless explicitly opted out.
+func RateLimitAll(getConfig func() (limiter.Limiter, time.Duration), excluded []string) func(http.Handler) http.Handler {
+	excludedSet := make(map[string]struct{}, len(excluded))
+	for _, p := range excluded {
+		excludedSet[p] = struct{}{}
+	}
+
+	innerRL := RateLimit(getConfig)
+	return func(next http.Handler) http.Handler {
+		limited := innerRL(next)
+		return http.HandlerFunc(func(resw http.ResponseWriter, req *http.Request) {
+			if _, skip := excludedSet[req.URL.Path]; skip {
+				next.ServeHTTP(resw, req)
+				return
+			}
+			limited.ServeHTTP(resw, req)
 		})
 	}
 }

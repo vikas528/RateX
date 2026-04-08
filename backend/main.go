@@ -5,6 +5,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/vikas528/RateX/common"
@@ -39,7 +42,7 @@ func main() {
 
 	// Verify Redis is reachable before accepting traffic. A failed Ping here
 	// causes the process to exit with a clear log message, which surfaces
-	// immediately in `fly logs` instead of silently returning 500s.
+	// immediately in Render/fly.io logs instead of silently returning 500s.
 	if err := redisClient.Ping(context.Background()).Err(); err != nil {
 		log.Fatalf("Redis ping failed — check REDIS_URL / REDIS_ADDR: %v", err)
 	}
@@ -51,11 +54,10 @@ func main() {
 	log.Printf("Starting: algo=%s limit=%d window=%ds",
 		initConfig.Algo, initConfig.Limit, initConfig.WindowSecs)
 
-	rateLimiter := middleware.RateLimit(server.GetLimiterConfig)
-
 	mux := http.NewServeMux()
 
-	// ── Non-rate-limited endpoints ───────────────────────────────────────────
+	// ── All routes — rate-limited by default ─────────────────────────────────
+	// Exceptions are declared in config.ExcludedFromRateLimit.
 	mux.HandleFunc(constants.RouteHealth, mock.HandleMockHealthCheck)
 
 	mux.HandleFunc(constants.RouteVisualizerState, func(resw http.ResponseWriter, req *http.Request) {
@@ -77,15 +79,50 @@ func main() {
 		}
 	})
 
-	// ── Rate-limited endpoints ───────────────────────────────────────────────
-	mux.Handle(constants.RouteProducts, rateLimiter(http.HandlerFunc(mock.HandleListProducts)))
-	mux.Handle(constants.RouteProductByID, rateLimiter(http.HandlerFunc(mock.HandleGetProduct)))
-	mux.Handle(constants.RouteOrders, rateLimiter(http.HandlerFunc(mock.HandleCreateOrder)))
-	mux.Handle(constants.RouteUsersMe, rateLimiter(http.HandlerFunc(mock.HandleGetMe)))
+	mux.HandleFunc(constants.RouteProducts, mock.HandleListProducts)
+	mux.HandleFunc(constants.RouteProductByID, mock.HandleGetProduct)
+	mux.HandleFunc(constants.RouteOrders, mock.HandleCreateOrder)
+	mux.HandleFunc(constants.RouteUsersMe, mock.HandleGetMe)
 
 	mux.HandleFunc(constants.RouteRoot, func(resw http.ResponseWriter, req *http.Request) {
+		if req.URL.Path != "/" {
+			utils.JsonResponse(resw, http.StatusNotFound, map[string]string{"error": constants.ErrNotFound})
+			return
+		}
 		mock.HandleRoot(resw, req, server)
 	})
 
-	log.Fatal(http.ListenAndServe(constants.ServerListenAddr, middleware.CorsMiddleware(mux)))
+	// Wrap the whole mux: every route is rate-limited unless its path is in
+	// config.ExcludedFromRateLimit.  Add new rate-limited routes to the mux above;
+	// add management/utility routes to ExcludedFromRateLimit to skip limiting.
+	handler := middleware.RateLimitAll(server.GetLimiterConfig, config.ExcludedFromRateLimit)(mux)
+
+	srv := &http.Server{
+		Addr:    constants.ServerListenAddr,
+		Handler: middleware.CorsMiddleware(handler),
+	}
+
+	// Catch SIGTERM (Render redeploy / k8s scale-down) and SIGINT (Ctrl-C).
+	// In-flight requests are drained for up to 10 seconds before forced exit.
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	go func() {
+		log.Printf("Listening on %s", constants.ServerListenAddr)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("ListenAndServe: %v", err)
+		}
+	}()
+
+	<-ctx.Done()
+	stop() // release signal resources
+	log.Printf("Shutdown signal received \u2014 draining in-flight requests (timeout: 10s)\u2026")
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		log.Fatalf("Graceful shutdown failed: %v", err)
+	}
+	log.Printf("Server stopped cleanly")
 }
