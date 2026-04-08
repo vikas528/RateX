@@ -1,7 +1,8 @@
 # ⚡ RateX — Redis-Powered Rate Limiter Playground
 
 [![Deploy Frontend](https://github.com/vikas528/RateX/actions/workflows/deploy-frontend.yml/badge.svg)](https://github.com/vikas528/RateX/actions/workflows/deploy-frontend.yml)
-[![Deploy Backend](https://github.com/vikas528/RateX/actions/workflows/deploy-backend.yml/badge.svg)](https://github.com/vikas528/RateX/actions/workflows/deploy-backend.yml)
+[![Deploy Backend (fly.io)](https://github.com/vikas528/RateX/actions/workflows/deploy-fly-io-backend.yml/badge.svg)](https://github.com/vikas528/RateX/actions/workflows/ddeploy-fly-io-backend.yml)
+[![Deploy Backend (render)](https://github.com/vikas528/RateX/actions/workflows/deploy-render-backend.yml/badge.svg)](https://github.com/vikas528/RateX/actions/workflows/ddeploy-render-backend.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 > An interactive, full-stack rate-limiter playground that lets you configure, stress-test, and **watch in real time** three classic rate-limiting algorithms — all backed by Redis.
