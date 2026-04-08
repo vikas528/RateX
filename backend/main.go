@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -20,7 +21,7 @@ func main() {
 
 	initConfig := config.InitDefaultConfig()
 
-	// Support both REDIS_URL (redis://host:port — injected by Render's managed Redis)
+	// Support both REDIS_URL (rediss://host:port — Upstash / Render managed Redis)
 	// and the legacy REDIS_ADDR (host:port) for local / Docker Compose setups.
 	var redisClient *redis.Client
 	if redisURL := os.Getenv("REDIS_URL"); redisURL != "" {
@@ -35,6 +36,14 @@ func main() {
 		redisClient = redis.NewClient(&redis.Options{Addr: redisAddr})
 		log.Printf("Redis: connecting via REDIS_ADDR=%s", redisAddr)
 	}
+
+	// Verify Redis is reachable before accepting traffic. A failed Ping here
+	// causes the process to exit with a clear log message, which surfaces
+	// immediately in `fly logs` instead of silently returning 500s.
+	if err := redisClient.Ping(context.Background()).Err(); err != nil {
+		log.Fatalf("Redis ping failed — check REDIS_URL / REDIS_ADDR: %v", err)
+	}
+	log.Printf("Redis: connection OK")
 
 	limiter := common.BuildLimiter(redisClient, initConfig)
 	server := config.InitServer(initConfig, redisClient, limiter)

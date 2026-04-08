@@ -395,19 +395,31 @@
     justify-content: center;
   }
 
-  /* Fixed Window: SVG ring(150px) + gap(32px) + right panel(min 220px) = 402px.
-     Reduce min-width to 0 so it reflows below the ring. */
+  /* Fixed Window: the ring legend has white-space:nowrap so .viz-fw-left can
+     be wider than the SVG itself, pushing the layout to overflow instead of
+     wrapping cleanly.
+     Force a simple column stack so both halves always go full-width. */
+  .viz-fw-wrap {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .viz-fw-left {
+    width: 100%;
+    align-items: center;
+  }
+
+  .viz-fw-ring-legend {
+    white-space: normal;
+    justify-content: center;
+  }
+
   .viz-fw-right {
     min-width: 0;
     width: 100%;
   }
 
-  .viz-fw-wrap {
-    gap: 1.25rem;
-    justify-content: center;
-  }
-
-  /* Slightly shrink the fixed-window SVG so it doesn't eat half the card */
   .viz-fw-svg {
     width: 120px;
     height: 120px;
